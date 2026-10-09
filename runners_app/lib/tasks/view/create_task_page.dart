@@ -13,7 +13,9 @@ import 'package:runners_app/theme/app_theme.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
 
 class CreateTaskPage extends StatefulWidget {
-  const new({super.key});
+  const new({this.initialType, super.key});
+
+  final String? initialType;
 
   @override
   State<CreateTaskPage> createState() => _CreateTaskPageState();
@@ -29,10 +31,16 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   final _pickupLng = TextEditingController(text: '28.2833');
   final _dropoffLat = TextEditingController(text: '-15.4300');
   final _dropoffLng = TextEditingController(text: '28.3500');
-  var _taskType = 'store_pickup';
+  late String _taskType;
   var _step = 0;
   var _submitting = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _taskType = widget.initialType ?? 'store_pickup';
+  }
 
   @override
   void dispose() {

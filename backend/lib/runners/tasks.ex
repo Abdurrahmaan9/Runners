@@ -29,7 +29,7 @@ defmodule Runners.Tasks do
     end
   end
 
-  def create_task(%User{role: :requester} = requester, attrs) do
+  def create_task(%User{} = requester, attrs) do
     with {:ok, attrs} <- put_locations(attrs, ["pickup_location", "dropoff_location"]) do
       %Task{}
       |> Task.changeset(attrs)
@@ -39,8 +39,6 @@ defmodule Runners.Tasks do
       |> preload_parties()
     end
   end
-
-  def create_task(%User{}, _attrs), do: {:error, :forbidden}
 
   def update_task(%Task{} = task, %User{} = user, attrs) do
     cond do
@@ -85,7 +83,9 @@ defmodule Runners.Tasks do
 
       query =
         from task in Task,
-          where: task.id == ^uuid and task.status == :posted and is_nil(task.runner_id)
+          where:
+            task.id == ^uuid and task.status == :posted and is_nil(task.runner_id) and
+              task.requester_id != ^runner.id
 
       case Repo.update_all(query, set: [status: :assigned, runner_id: runner.id, updated_at: now]) do
         {1, _} ->
@@ -143,9 +143,11 @@ defmodule Runners.Tasks do
 
   defp task_scope(%User{role: :runner, id: id}, opts) do
     if opts[:status] == :posted do
-      from task in Task, where: task.status == :posted
+      from task in Task,
+        where: task.status == :posted and task.requester_id != ^id
     else
-      from task in Task, where: task.runner_id == ^id
+      from task in Task,
+        where: task.runner_id == ^id or task.requester_id == ^id
     end
   end
 

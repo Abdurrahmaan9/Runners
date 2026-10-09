@@ -13,7 +13,15 @@ defmodule Runners.TasksTest do
     assert task.requester_id == requester.id
     assert task.runner_id == nil
     assert %{lat: -15.43, lng: 28.35} == Runners.Geospatial.Point.to_map(task.dropoff_location)
-    assert Tasks.create_task(runner, task_attrs()) == {:error, :forbidden}
+
+    assert {:ok, own} = Tasks.create_task(runner, task_attrs(%{"title" => "Runner errand"}))
+    assert own.requester_id == runner.id
+    assert own.status == :posted
+
+    posted = Tasks.list_tasks(runner, status: :posted)
+    assert Enum.any?(posted, &(&1.id == task.id))
+    refute Enum.any?(posted, &(&1.id == own.id))
+    assert Enum.any?(Tasks.list_tasks(runner), &(&1.id == own.id))
   end
 
   test "accept_task locks the task for the first runner" do

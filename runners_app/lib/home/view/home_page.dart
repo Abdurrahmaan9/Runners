@@ -90,11 +90,12 @@ class HomeView extends StatelessWidget {
             user: user,
             board: board,
             onOpen: (task) => _openTask(context, task),
+            onCreate: (type) => _openCreate(context, type),
             onSettings: () => _openSettings(context),
           )
         : _RequesterHome(
             board: board,
-            onCreate: () => _openCreate(context),
+            onCreate: (type) => _openCreate(context, type),
             onOpen: (task) => _openTask(context, task),
             onSettings: () => _openSettings(context),
           );
@@ -106,11 +107,19 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Future<void> _openCreate(BuildContext context) async {
-    final created = await Navigator.of(context)
-        .push<bool>(MaterialPageRoute(builder: (_) => const CreateTaskPage()));
+  Future<void> _openCreate(BuildContext context, String? type) async {
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
+        builder: (_) => CreateTaskPage(initialType: type),
+      ),
+    );
     if ((created ?? false) && context.mounted) {
-      await context.read<TaskBoardCubit>().load();
+      final board = context.read<TaskBoardCubit>();
+      if (board.state.statusFilter != null) {
+        await board.changeFilter(null);
+      } else {
+        await board.load();
+      }
     }
   }
 
@@ -136,7 +145,7 @@ class _RequesterHome extends StatelessWidget {
   });
 
   final TaskBoardState board;
-  final VoidCallback onCreate;
+  final void Function(String? type) onCreate;
   final void Function(RunnerTask task) onOpen;
   final VoidCallback onSettings;
 
@@ -160,109 +169,129 @@ class _RequesterHome extends StatelessWidget {
           ),
           Align(
             alignment: Alignment.bottomCenter,
-            child: SheetCard(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 42,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: AppTheme.line,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ),
-                  Text(
-                    l10n.whatNeed,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 14),
-                  if (active.isNotEmpty)
-                    ...active
-                        .take(2)
-                        .map(
-                          (task) => ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(
-                              task.title,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            subtitle: Text(taskStatusLabel(l10n, task.status)),
-                            onTap: () => onOpen(task),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.72,
+              ),
+              child: SheetCard(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 42,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: AppTheme.line,
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
-                  TextField(
-                    readOnly: true,
-                    onTap: onCreate,
-                    decoration: InputDecoration(hintText: l10n.describeErrand),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      for (final type in const [
-                        'store_pickup',
-                        'delivery',
-                        'home_chore',
-                      ])
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Material(
-                              color: AppTheme.field,
-                              borderRadius: BorderRadius.circular(16),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(16),
-                                onTap: onCreate,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
+                      ),
+                      Text(
+                        l10n.whatNeed,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 14),
+                      if (active.isNotEmpty)
+                        ...active
+                            .take(2)
+                            .map(
+                              (task) => ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                title: Text(
+                                  task.title,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
                                   ),
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                        width: 36,
-                                        height: 28,
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.teal,
-                                          borderRadius: BorderRadius.circular(
-                                            10,
+                                ),
+                                subtitle: Text(
+                                  taskStatusLabel(l10n, task.status),
+                                ),
+                                onTap: () => onOpen(task),
+                              ),
+                            ),
+                      GestureDetector(
+                        onTap: () => onCreate(null),
+                        child: IgnorePointer(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: l10n.describeErrand,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          for (final type in const [
+                            'store_pickup',
+                            'delivery',
+                            'home_chore',
+                          ])
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                child: Material(
+                                  color: AppTheme.field,
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(16),
+                                    onTap: () => onCreate(type),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            width: 36,
+                                            height: 28,
+                                            decoration: BoxDecoration(
+                                              color: AppTheme.teal,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
                                           ),
-                                        ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            taskTypeLabel(l10n, type),
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppTheme.ink,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        taskTypeLabel(l10n, type),
-                                        textAlign: TextAlign.center,
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppTheme.ink,
-                                        ),
-                                      ),
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      FilledButton(
+                        onPressed: () => onCreate(null),
+                        child: Text(l10n.postErrand),
+                      ),
+                      if (board.message != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            board.message!,
+                            style: const TextStyle(color: Color(0xFFC2413B)),
                           ),
                         ),
                     ],
                   ),
-                  if (board.message != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        board.message!,
-                        style: const TextStyle(color: Color(0xFFC2413B)),
-                      ),
-                    ),
-                ],
+                ),
               ),
             ),
           ),
@@ -277,12 +306,14 @@ class _RunnerHome extends StatefulWidget {
     required this.user,
     required this.board,
     required this.onOpen,
+    required this.onCreate,
     required this.onSettings,
   });
 
   final AppUser user;
   final TaskBoardState board;
   final void Function(RunnerTask task) onOpen;
+  final void Function(String? type) onCreate;
   final VoidCallback onSettings;
 
   @override
@@ -396,6 +427,13 @@ class _RunnerHomeState extends State<_RunnerHome> {
                   ),
                 ),
                 TextButton(
+                  onPressed: () => widget.onCreate(null),
+                  child: Text(
+                    l10n.postErrand,
+                    style: const TextStyle(color: AppTheme.white),
+                  ),
+                ),
+                TextButton(
                   onPressed: () => unawaited(
                     context.read<TaskBoardCubit>().changeFilter(null),
                   ),
@@ -422,7 +460,7 @@ class _RunnerHomeState extends State<_RunnerHome> {
             top: 56,
             left: 20,
             child: MapChip(
-              presence.online ? l10n.onlineActive : l10n.goOffline,
+              presence.online ? l10n.goOffline : l10n.goOnline,
             ),
           ),
           Positioned(
@@ -446,7 +484,7 @@ class _RunnerHomeState extends State<_RunnerHome> {
                     value: presence.online,
                     activeThumbColor: AppTheme.copper,
                     title: Text(
-                      presence.online ? l10n.goOnline : l10n.goOffline,
+                      presence.online ? l10n.goOffline : l10n.goOnline,
                     ),
                     onChanged: presence.busy
                         ? null
@@ -455,8 +493,17 @@ class _RunnerHomeState extends State<_RunnerHome> {
                           ),
                   ),
                   FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppTheme.copper,
+                    onPressed: () => widget.onCreate(null),
+                    child: Text(l10n.postErrand),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.copper,
+                      side: const BorderSide(
+                        color: AppTheme.copper,
+                        width: 1.4,
+                      ),
                     ),
                     onPressed: () => unawaited(
                       context.read<TaskBoardCubit>().changeFilter('posted'),
