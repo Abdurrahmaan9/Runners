@@ -1,0 +1,15 @@
+include:
+  - package:very_good_analysis/analysis_options.yaml
+  - package:bloc_lint/recommended.yaml
+analyzer:
+  exclude:
+    - lib/l10n/gen/*
+    - build/**
+    - android/**
+    - ios/**
+linter:
+  rules:
+    public_member_api_docs: false
+    # Public constructor names stay public. Initializing formals would
+    # rename them to private fields, which other libraries cannot call.
+    prefer_initializing_formals: false

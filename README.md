@@ -7,10 +7,9 @@ Payments, wallets, and mobile-money APIs are intentionally out of scope.
 ## Layout
 
 ```text
-backend/   Phoenix 1.8 JSON API (Elixir, PostgreSQL/PostGIS, Redis)
+backend/       Phoenix 1.8 JSON API (Elixir, PostgreSQL/PostGIS, Redis)
+runners_app/   Flutter client (Android and iOS), created with Very Good CLI
 ```
-
-The Flutter client is the next phase. This kickstart covers authentication, task management, geospatial matching, and the realtime channels the app will use.
 
 ## Backend
 
@@ -20,7 +19,7 @@ Requirements:
 - PostgreSQL with the PostGIS extension
 - Redis or Valkey on `localhost:6379`
 
-This machine already has PostgreSQL 18 and Valkey. The API connects as `postgres` / `postgres` on `localhost:5432`, and `runners_dev` has been created. PostGIS is the missing piece. Install it, then migrate:
+The API connects as `postgres` / `postgres` on `localhost:5432`. If PostGIS is not installed yet, install it and migrate:
 
 ```bash
 sudo dnf install postgis
@@ -95,9 +94,25 @@ Connect to `ws://localhost:4000/socket/websocket?token=<jwt>`.
 - `task_dispatch:<user_id>` — that user only. Events: `task_posted`, `task_updated`.
 - `task_tracking:<task_id>` — the requester, the assigned runner, or an admin. While the task is `in_progress`, the runner pushes `location` with `lat` and `lng`. Everyone else on the topic receives `runner_location`.
 
+## Flutter app
+
+The client lives in `runners_app/` and was created with Very Good CLI. It targets Android and iOS. Development talks to the local API: `http://10.0.2.2:4000` on the Android emulator, `http://127.0.0.1:4000` otherwise. Override either with `--dart-define=API_BASE_URL=...`.
+
+Sign in with a seeded phone number. There is no OTP. A requester posts an errand; a runner goes online, accepts it, and advances `assigned → runner arrived → in progress → completed`. Live tracking uses the Phoenix channel `task_tracking:<task_id>`.
+
+Google Maps tiles need an API key. Set `GOOGLE_MAPS_API_KEY` for Android, and put the same key in `GMSApiKey` inside `ios/Runner/Info.plist`. Without a key the map stays blank and the coordinates still show as text.
+
+```bash
+cd runners_app
+flutter run --flavor development --target lib/main_development.dart
+```
+
 ## Tests
 
 ```bash
 cd backend
 mix test
+
+cd runners_app
+flutter test
 ```
