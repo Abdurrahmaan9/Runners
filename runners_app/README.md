@@ -33,7 +33,7 @@ $ flutter run --flavor production --target lib/main_production.dart
 
 _\*Runners App works on iOS and Android._
 
-The development flavor calls the local API at `http://10.0.2.2:4000` on Android emulators and `http://127.0.0.1:4000` elsewhere. Pass `--dart-define=API_BASE_URL=https://host` to point at another server. Maps tiles need `GOOGLE_MAPS_API_KEY` in the environment for Android and `GMSApiKey` in `ios/Runner/Info.plist`.
+The development flavor calls the local API at `http://Abdur-rahmaan.local:4000` on Android and `http://127.0.0.1:4000` elsewhere. An emulator needs `--dart-define=API_BASE_URL=http://10.0.2.2:4000`. Maps tiles need `GOOGLE_MAPS_API_KEY` in the environment for Android and `GMSApiKey` in `ios/Runner/Info.plist`.
 
 ---
 

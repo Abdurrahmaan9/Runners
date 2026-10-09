@@ -98,7 +98,7 @@ Connect to `ws://localhost:4000/socket/websocket?token=<jwt>`.
 
 ## Flutter app
 
-The client lives in `runners_app/` and was created with Very Good CLI. It targets Android and iOS. Development talks to the local API: `http://10.0.2.2:4000` on the Android emulator, `http://127.0.0.1:4000` otherwise. Override either with `--dart-define=API_BASE_URL=...`.
+The client lives in `runners_app/` and was created with Very Good CLI. It targets Android and iOS. Development talks to the local API at `http://Abdur-rahmaan.local:4000` on Android and `http://127.0.0.1:4000` otherwise. An Android emulator needs `--dart-define=API_BASE_URL=http://10.0.2.2:4000`.
 
 Sign in with a seeded phone number and `password123`. A requester posts an errand; a runner goes online, accepts it, and advances `assigned → runner arrived → in progress → completed`. Live tracking uses the Phoenix channel `task_tracking:<task_id>`.
 

@@ -10,7 +10,7 @@ Future<void> main() async {
   final baseUrl = override.isNotEmpty
       ? override
       : Platform.isAndroid
-      ? 'http://10.0.2.2:4000'
+      ? 'http://Abdur-rahmaan.local:4000'
       : 'http://127.0.0.1:4000';
   final scope = AppScope.create(
     AppConfig(apiBaseUrl: baseUrl, flavor: 'development'),

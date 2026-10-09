@@ -24,9 +24,10 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.select<AuthCubit, AppUser>(
-      (cubit) => cubit.state.user!,
+    final user = context.select<AuthCubit, AppUser?>(
+      (cubit) => cubit.state.user,
     );
+    if (user == null) return const SizedBox.shrink();
     final token = context.read<AuthRepository>().token;
     final config = context.read<AppConfig>();
 
@@ -77,9 +78,10 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final user = context.select<AuthCubit, AppUser>(
-      (cubit) => cubit.state.user!,
+    final user = context.select<AuthCubit, AppUser?>(
+      (cubit) => cubit.state.user,
     );
+    if (user == null) return const SizedBox.shrink();
     final board = context.watch<TaskBoardCubit>().state;
 
     final page = Scaffold(

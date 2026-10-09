@@ -39,9 +39,10 @@ class _TaskDetailView extends StatelessWidget {
       },
       builder: (context, state) {
         final task = state.task;
-        final user = context.select<AuthCubit, AppUser>(
-          (cubit) => cubit.state.user!,
+        final user = context.select<AuthCubit, AppUser?>(
+          (cubit) => cubit.state.user,
         );
+        if (user == null) return const SizedBox.shrink();
         final cubit = context.read<TaskDetailCubit>();
         final advance = task.runnerAdvance;
         final isRequester = task.requesterId == user.id;
