@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/auth/auth.dart';
 import 'package:runners_app/config/app_config.dart';
@@ -10,6 +9,8 @@ import 'package:runners_app/models/runner_task.dart';
 import 'package:runners_app/realtime/phoenix_channel.dart';
 import 'package:runners_app/runner/data/location_source.dart';
 import 'package:runners_app/runner/data/runner_repository.dart';
+import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/errand_widgets.dart';
 import 'package:runners_app/tracking/cubit/tracking_cubit.dart';
 
 class TrackingPage extends StatelessWidget {
@@ -39,80 +40,80 @@ class TrackingPage extends StatelessWidget {
         unawaited(cubit.start());
         return cubit;
       },
-      child: const _TrackingView(),
+      child: _TrackingView(task: task),
     );
   }
 }
 
-class _TrackingView extends StatefulWidget {
-  const new();
+class _TrackingView extends StatelessWidget {
+  const new({required this.task});
 
-  @override
-  State<_TrackingView> createState() => _TrackingViewState();
-}
-
-class _TrackingViewState extends State<_TrackingView> {
-  GoogleMapController? _controller;
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
+  final RunnerTask task;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return BlocConsumer<TrackingCubit, TrackingState>(
-      listenWhen: (previous, current) => previous.camera != current.camera,
-      listener: (context, state) {
-        final controller = _controller;
-        if (controller == null) return;
-        unawaited(
-          controller.animateCamera(
-            CameraUpdate.newLatLng(LatLng(state.camera.lat, state.camera.lng)),
-          ),
-        );
-      },
+    return BlocBuilder<TrackingCubit, TrackingState>(
       builder: (context, state) {
         final runner = state.runnerPoint;
         return Scaffold(
-          appBar: AppBar(title: Text(l10n.track)),
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          body: Stack(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  state.message ??
-                      (runner == null
-                          ? l10n.trackingWaiting
-                          : '${runner.lat.toStringAsFixed(5)}, '
-                                '${runner.lng.toStringAsFixed(5)}'),
+              ErrandBackdrop(
+                pins: [
+                  const ErrandPin(color: AppTheme.teal, dx: 0.46, dy: 0.5),
+                  if (runner != null)
+                    const ErrandPin(color: AppTheme.copper, dx: 0.58, dy: 0.3),
+                ],
+              ),
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8, top: 8, right: 16),
+                  child: Row(
+                    children: [
+                      IconButton.filled(
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppTheme.white,
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.arrow_back, color: AppTheme.ink),
+                      ),
+                      const SizedBox(width: 8),
+                      MapChip(
+                        runner == null ? l10n.trackingWaiting : l10n.track,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              Expanded(
-                child: GoogleMap(
-                  initialCameraPosition: CameraPosition(
-                    target: LatLng(state.camera.lat, state.camera.lng),
-                    zoom: 14,
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: SheetCard(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        task.title,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        state.message ??
+                            (runner == null
+                                ? l10n.trackingWaiting
+                                : '${runner.lat.toStringAsFixed(5)}, '
+                                      '${runner.lng.toStringAsFixed(5)}'),
+                        style: const TextStyle(color: AppTheme.muted),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        task.dropoffAddress,
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                   ),
-                  myLocationButtonEnabled: false,
-                  markers: {
-                    Marker(
-                      markerId: const MarkerId('dropoff'),
-                      position: LatLng(
-                        context.read<TrackingCubit>().dropoff.lat,
-                        context.read<TrackingCubit>().dropoff.lng,
-                      ),
-                    ),
-                    if (runner != null)
-                      Marker(
-                        markerId: const MarkerId('runner'),
-                        position: LatLng(runner.lat, runner.lng),
-                      ),
-                  },
-                  onMapCreated: (controller) => _controller = controller,
                 ),
               ),
             ],

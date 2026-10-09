@@ -33,7 +33,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Sign in'), findsOneWidget);
-    expect(find.text('Local errands, on demand.'), findsOneWidget);
+    expect(find.text('Log in'), findsOneWidget);
+    expect(find.textContaining('Errands done'), findsOneWidget);
   });
 }

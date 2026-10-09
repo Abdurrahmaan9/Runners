@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/auth/auth.dart';
-import 'package:runners_app/auth/view/login_page.dart';
+import 'package:runners_app/auth/view/welcome_page.dart';
 import 'package:runners_app/home/view/home_page.dart';
 import 'package:runners_app/l10n/l10n.dart';
 
@@ -26,7 +26,7 @@ class AuthGate extends StatelessWidget {
           ),
         ),
       ),
-      AuthStatus.unauthenticated => const LoginPage(),
+      AuthStatus.unauthenticated => const WelcomePage(),
       AuthStatus.authenticated => const HomePage(),
     };
   }

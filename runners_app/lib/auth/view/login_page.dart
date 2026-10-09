@@ -1,12 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/auth/auth.dart';
-import 'package:runners_app/auth/view/register_page.dart';
+import 'package:runners_app/auth/view/forgot_password_page.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/errand_widgets.dart';
 
 class LoginPage extends StatefulWidget {
-  const new({super.key});
+  const new({required this.onCreate, required this.onBack, super.key});
+
+  final VoidCallback onCreate;
+  final VoidCallback onBack;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -15,7 +19,8 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _phone = TextEditingController();
   final _password = TextEditingController();
-  var _creatingAccount = false;
+  var _obscure = true;
+  var _forgot = false;
 
   @override
   void dispose() {
@@ -26,12 +31,9 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_creatingAccount) {
-      return RegisterPage(
-        onCancel: () => setState(() => _creatingAccount = false),
-      );
+    if (_forgot) {
+      return ForgotPasswordPage(onBack: () => setState(() => _forgot = false));
     }
-
     final l10n = context.l10n;
     final submitting = context.select<AuthCubit, bool>(
       (cubit) => cubit.state.submitting,
@@ -41,81 +43,93 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     return Scaffold(
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-        children: [
-          const _BrandHeader(),
-          TextField(
-            controller: _phone,
-            keyboardType: TextInputType.phone,
-            decoration: InputDecoration(
-              labelText: l10n.phoneNumber,
-              hintText: l10n.phoneHint,
-              prefixText: '+260 ',
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _password,
-            obscureText: true,
-            decoration: InputDecoration(labelText: l10n.password),
-          ),
-          if (message != null) ...[
-            const SizedBox(height: 12),
-            Text(
-              message,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ],
-          const SizedBox(height: 20),
-          FilledButton(
-            onPressed: submitting
-                ? null
-                : () => context.read<AuthCubit>().login(
-                    phoneNumber: _phone.text,
-                    password: _password.text,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _BackDot(onPressed: widget.onBack),
+              const SizedBox(height: 28),
+              Text(
+                l10n.welcomeBack,
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(l10n.loginLead),
+              const SizedBox(height: 28),
+              FieldCaption(l10n.phoneNumber),
+              PhoneNumberField(controller: _phone),
+              const SizedBox(height: 18),
+              FieldCaption(l10n.password),
+              TextField(
+                controller: _password,
+                obscureText: _obscure,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.ink,
+                ),
+                decoration: InputDecoration(
+                  suffixIcon: TextButton(
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                    child: Text(
+                      _obscure ? l10n.showPassword : l10n.hidePassword,
+                    ),
                   ),
-            child: submitting
-                ? const SizedBox.square(
-                    dimension: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(l10n.signIn),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => setState(() => _forgot = true),
+                  child: Text(l10n.forgotPassword),
+                ),
+              ),
+              if (message != null)
+                Text(message, style: const TextStyle(color: Color(0xFFC2413B))),
+              const Spacer(),
+              FilledButton(
+                onPressed: submitting
+                    ? null
+                    : () => context.read<AuthCubit>().login(
+                        phoneNumber: _phone.text,
+                        password: _password.text,
+                      ),
+                child: Text(l10n.signIn),
+              ),
+              const SizedBox(height: 14),
+              Center(
+                child: TextButton(
+                  onPressed: widget.onCreate,
+                  child: Text('${l10n.newHere} ${l10n.createAccount}'),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: () => setState(() => _creatingAccount = true),
-            child: Text(l10n.needAccount),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
-class _BrandHeader extends StatelessWidget {
-  const new();
+class _BackDot extends StatelessWidget {
+  const new({required this.onPressed});
+
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 28),
-      padding: const EdgeInsets.fromLTRB(0, 72, 0, 28),
-      width: double.infinity,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(width: 42, height: 6, color: AppTheme.amber),
-          const SizedBox(height: 16),
-          Text(
-            l10n.appTitle,
-            style: Theme.of(context).textTheme.displaySmall
-                ?.copyWith(color: AppTheme.ink, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 8),
-          Text(l10n.tagline, style: Theme.of(context).textTheme.titleMedium),
-        ],
+    return Material(
+      color: AppTheme.mist,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onPressed,
+        child: const SizedBox(
+          width: 42,
+          height: 42,
+          child: Icon(Icons.arrow_back, color: AppTheme.ink),
+        ),
       ),
     );
   }

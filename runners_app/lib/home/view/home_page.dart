@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/auth/auth.dart';
 import 'package:runners_app/config/app_config.dart';
 import 'package:runners_app/home/cubit/dispatch_cubit.dart';
+import 'package:runners_app/home/view/settings_page.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/models/app_user.dart';
 import 'package:runners_app/models/runner_task.dart';
@@ -18,6 +19,7 @@ import 'package:runners_app/tasks/view/create_task_page.dart';
 import 'package:runners_app/tasks/view/task_detail_page.dart';
 import 'package:runners_app/tasks/view/task_labels.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/errand_widgets.dart';
 
 class HomePage extends StatelessWidget {
   const new({super.key});
@@ -77,96 +79,25 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final user = context.select<AuthCubit, AppUser?>(
       (cubit) => cubit.state.user,
     );
     if (user == null) return const SizedBox.shrink();
     final board = context.watch<TaskBoardCubit>().state;
 
-    final page = Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.appTitle),
-        actions: [
-          IconButton(
-            tooltip: l10n.signOut,
-            onPressed: () => context.read<AuthCubit>().logout(),
-            icon: const Icon(Icons.logout),
-          ),
-        ],
-      ),
-      floatingActionButton: user.isRequester
-          ? FloatingActionButton.extended(
-              onPressed: () => _openCreate(context),
-              icon: const Icon(Icons.add),
-              label: Text(l10n.newErrand),
-            )
-          : null,
-      body: RefreshIndicator(
-        onRefresh: () => context.read<TaskBoardCubit>().load(),
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-          children: [
-            Text(
-              user.fullName,
-              style: Theme.of(context).textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.w800),
-            ),
-            Text(user.phoneNumber),
-            if (user.isRunner) ...[
-              const SizedBox(height: 16),
-              const _PresenceCard(),
-              const SizedBox(height: 16),
-              SegmentedButton<String>(
-                segments: [
-                  ButtonSegment(value: 'posted', label: Text(l10n.openBoard)),
-                  ButtonSegment(value: 'mine', label: Text(l10n.myTasks)),
-                ],
-                selected: {board.statusFilter ?? 'mine'},
-                onSelectionChanged: (selection) {
-                  final value = selection.first;
-                  unawaited(
-                    context.read<TaskBoardCubit>().changeFilter(
-                      value == 'mine' ? null : value,
-                    ),
-                  );
-                },
-              ),
-            ],
-            if (board.message != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                board.message!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
-            const SizedBox(height: 12),
-            if (board.loading && board.tasks.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(32),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (board.tasks.isEmpty)
-              Padding(
-                padding: const EdgeInsets.all(32),
-                child: Text(
-                  l10n.emptyTasks,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              )
-            else
-              ...board.tasks.map(
-                (task) => _TaskCard(
-                  task: task,
-                  onTap: () => _openTask(context, task),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
+    final page = user.isRunner
+        ? _RunnerHome(
+            user: user,
+            board: board,
+            onOpen: (task) => _openTask(context, task),
+            onSettings: () => _openSettings(context),
+          )
+        : _RequesterHome(
+            board: board,
+            onCreate: () => _openCreate(context),
+            onOpen: (task) => _openTask(context, task),
+            onSettings: () => _openSettings(context),
+          );
     final token = context.read<AuthRepository>().token;
     if (token == null) return page;
     return BlocListener<DispatchCubit, int>(
@@ -183,6 +114,11 @@ class HomeView extends StatelessWidget {
     }
   }
 
+  void _openSettings(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => const SettingsPage()));
+  }
+
   Future<void> _openTask(BuildContext context, RunnerTask task) async {
     await Navigator.of(
       context,
@@ -191,61 +127,361 @@ class HomeView extends StatelessWidget {
   }
 }
 
-class _PresenceCard extends StatelessWidget {
-  const new();
+class _RequesterHome extends StatelessWidget {
+  const new({
+    required this.board,
+    required this.onCreate,
+    required this.onOpen,
+    required this.onSettings,
+  });
+
+  final TaskBoardState board;
+  final VoidCallback onCreate;
+  final void Function(RunnerTask task) onOpen;
+  final VoidCallback onSettings;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final presence = context.watch<PresenceCubit>().state;
-    return Card(
-      child: SwitchListTile(
-        value: presence.online,
-        activeThumbColor: AppTheme.pine,
-        title: Text(presence.online ? l10n.goOffline : l10n.goOnline),
-        subtitle: Text(
-          presence.message ??
-              (presence.online ? l10n.onlineBody : l10n.offlineBody),
-        ),
-        onChanged: presence.busy
-            ? null
-            : (value) => context.read<PresenceCubit>().setOnline(online: value),
+    final active = board.tasks.where((task) => !task.isTerminal).toList();
+    return Scaffold(
+      body: Stack(
+        children: [
+          const ErrandBackdrop(),
+          Positioned(top: 56, left: 20, child: MapChip(l10n.lusaka)),
+          Positioned(
+            top: 48,
+            right: 16,
+            child: IconButton.filled(
+              style: IconButton.styleFrom(backgroundColor: AppTheme.white),
+              onPressed: onSettings,
+              icon: const Icon(Icons.person, color: AppTheme.ink),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SheetCard(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 42,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.line,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    l10n.whatNeed,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 14),
+                  if (active.isNotEmpty)
+                    ...active
+                        .take(2)
+                        .map(
+                          (task) => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(
+                              task.title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            subtitle: Text(taskStatusLabel(l10n, task.status)),
+                            onTap: () => onOpen(task),
+                          ),
+                        ),
+                  TextField(
+                    readOnly: true,
+                    onTap: onCreate,
+                    decoration: InputDecoration(hintText: l10n.describeErrand),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      for (final type in const [
+                        'store_pickup',
+                        'delivery',
+                        'home_chore',
+                      ])
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: Material(
+                              color: AppTheme.field,
+                              borderRadius: BorderRadius.circular(16),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: onCreate,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        width: 36,
+                                        height: 28,
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.teal,
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        taskTypeLabel(l10n, type),
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppTheme.ink,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  if (board.message != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        board.message!,
+                        style: const TextStyle(color: Color(0xFFC2413B)),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _TaskCard extends StatelessWidget {
-  const new({required this.task, required this.onTap});
+class _RunnerHome extends StatefulWidget {
+  const new({
+    required this.user,
+    required this.board,
+    required this.onOpen,
+    required this.onSettings,
+  });
 
-  final RunnerTask task;
-  final VoidCallback onTap;
+  final AppUser user;
+  final TaskBoardState board;
+  final void Function(RunnerTask task) onOpen;
+  final VoidCallback onSettings;
+
+  @override
+  State<_RunnerHome> createState() => _RunnerHomeState();
+}
+
+class _RunnerHomeState extends State<_RunnerHome> {
+  var _index = 0;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        title: Text(
-          task.title,
-          style: const TextStyle(fontWeight: FontWeight.w700),
+    final open = widget.board.statusFilter == 'posted';
+    final tasks = widget.board.tasks;
+    if (open && tasks.isNotEmpty) {
+      final task = tasks[_index.clamp(0, tasks.length - 1)];
+      return Scaffold(
+        backgroundColor: AppTheme.copper,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      l10n.newErrandNearby,
+                      style: const TextStyle(
+                        color: Color(0xFFFFE7D6),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: widget.onSettings,
+                      icon: const Icon(Icons.person, color: AppTheme.white),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Text(
+                  task.title,
+                  style: Theme.of(context).textTheme.headlineMedium
+                      ?.copyWith(color: AppTheme.white),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0x33FFFFFF),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Text(
+                    taskTypeLabel(l10n, task.taskType),
+                    style: const TextStyle(color: AppTheme.white),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  task.pickupAddress,
+                  style: const TextStyle(
+                    color: AppTheme.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  task.dropoffAddress,
+                  style: const TextStyle(
+                    color: AppTheme.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Text(
+                  l10n.estimatedCost,
+                  style: const TextStyle(color: Color(0xFFFFE7D6)),
+                ),
+                Text(
+                  'K ${task.estimatedCost}',
+                  style: const TextStyle(
+                    color: AppTheme.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const Spacer(),
+                FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppTheme.white,
+                    foregroundColor: AppTheme.copper,
+                  ),
+                  onPressed: () => widget.onOpen(task),
+                  child: Text(l10n.acceptErrand),
+                ),
+                Center(
+                  child: TextButton(
+                    onPressed: () {
+                      setState(() => _index = (_index + 1) % tasks.length);
+                    },
+                    child: Text(
+                      l10n.skip,
+                      style: const TextStyle(color: AppTheme.white),
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => unawaited(
+                    context.read<TaskBoardCubit>().changeFilter(null),
+                  ),
+                  child: Text(
+                    l10n.myTasks,
+                    style: const TextStyle(color: Color(0xFFFFE7D6)),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        subtitle: Text(
-          '${taskTypeLabel(l10n, task.taskType)}\n${task.dropoffAddress}',
-        ),
-        isThreeLine: true,
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(task.estimatedCost),
-            const SizedBox(height: 6),
-            Text(taskStatusLabel(l10n, task.status)),
-          ],
-        ),
+      );
+    }
+
+    final presence = context.watch<PresenceCubit>().state;
+    return Scaffold(
+      body: Stack(
+        children: [
+          const ErrandBackdrop(
+            pins: [ErrandPin(color: AppTheme.teal, dy: 0.32)],
+          ),
+          Positioned(
+            top: 56,
+            left: 20,
+            child: MapChip(
+              presence.online ? l10n.onlineActive : l10n.goOffline,
+            ),
+          ),
+          Positioned(
+            top: 48,
+            right: 16,
+            child: IconButton.filled(
+              style: IconButton.styleFrom(backgroundColor: AppTheme.white),
+              onPressed: widget.onSettings,
+              icon: const Icon(Icons.person, color: AppTheme.ink),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SheetCard(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: presence.online,
+                    activeThumbColor: AppTheme.copper,
+                    title: Text(
+                      presence.online ? l10n.goOnline : l10n.goOffline,
+                    ),
+                    onChanged: presence.busy
+                        ? null
+                        : (value) => context.read<PresenceCubit>().setOnline(
+                            online: value,
+                          ),
+                  ),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.copper,
+                    ),
+                    onPressed: () => unawaited(
+                      context.read<TaskBoardCubit>().changeFilter('posted'),
+                    ),
+                    child: Text(l10n.openBoard),
+                  ),
+                  const SizedBox(height: 8),
+                  if (tasks.isEmpty)
+                    Text(l10n.emptyTasks)
+                  else
+                    ...tasks
+                        .take(3)
+                        .map(
+                          (task) => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(task.title),
+                            subtitle: Text(taskStatusLabel(l10n, task.status)),
+                            onTap: () => widget.onOpen(task),
+                          ),
+                        ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

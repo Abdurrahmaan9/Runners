@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/api/api_exception.dart';
@@ -7,6 +9,8 @@ import 'package:runners_app/models/geo_point.dart';
 import 'package:runners_app/runner/data/location_source.dart';
 import 'package:runners_app/tasks/data/task_repository.dart';
 import 'package:runners_app/tasks/view/task_labels.dart';
+import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/errand_widgets.dart';
 
 class CreateTaskPage extends StatefulWidget {
   const new({super.key});
@@ -16,7 +20,6 @@ class CreateTaskPage extends StatefulWidget {
 }
 
 class _CreateTaskPageState extends State<CreateTaskPage> {
-  final _formKey = GlobalKey<FormState>();
   final _title = TextEditingController();
   final _description = TextEditingController();
   final _pickupAddress = TextEditingController();
@@ -26,7 +29,8 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   final _pickupLng = TextEditingController(text: '28.2833');
   final _dropoffLat = TextEditingController(text: '-15.4300');
   final _dropoffLng = TextEditingController(text: '28.3500');
-  var _taskType = 'delivery';
+  var _taskType = 'store_pickup';
+  var _step = 0;
   var _submitting = false;
   String? _error;
 
@@ -48,110 +52,44 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.newErrand)),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(20),
+      appBar: AppBar(
+        leading: BackButton(
+          onPressed: _step == 0
+              ? () => Navigator.pop(context)
+              : () => setState(() => _step -= 1),
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextFormField(
-              controller: _title,
-              decoration: InputDecoration(labelText: l10n.title),
-              validator: (value) => (value == null || value.trim().length < 3)
-                  ? l10n.title
-                  : null,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _description,
-              minLines: 3,
-              maxLines: 5,
-              decoration: InputDecoration(labelText: l10n.description),
-              validator: (value) => (value == null || value.trim().isEmpty)
-                  ? l10n.description
-                  : null,
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              initialValue: _taskType,
-              decoration: InputDecoration(labelText: l10n.taskType),
-              items: [
-                for (final type in const [
-                  'store_pickup',
-                  'delivery',
-                  'home_chore',
-                ])
-                  DropdownMenuItem(
-                    value: type,
-                    child: Text(taskTypeLabel(l10n, type)),
-                  ),
-              ],
-              onChanged: (value) {
-                if (value != null) setState(() => _taskType = value);
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _pickupAddress,
-              decoration: InputDecoration(labelText: l10n.pickupAddress),
-              validator: (value) => (value == null || value.trim().length < 3)
-                  ? l10n.pickupAddress
-                  : null,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(child: _coordField(_pickupLat, l10n.pickupLat)),
-                const SizedBox(width: 12),
-                Expanded(child: _coordField(_pickupLng, l10n.pickupLng)),
-              ],
-            ),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                onPressed: _useMyLocation,
-                child: Text(l10n.useMyLocation),
+            Text(
+              _step == 2 ? l10n.stepThree : l10n.newErrand,
+              style: const TextStyle(
+                color: AppTheme.teal,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.4,
               ),
             ),
-            TextFormField(
-              controller: _dropoffAddress,
-              decoration: InputDecoration(labelText: l10n.dropoffAddress),
-              validator: (value) => (value == null || value.trim().length < 3)
-                  ? l10n.dropoffAddress
-                  : null,
+            const SizedBox(height: 8),
+            Text(
+              _step == 2 ? l10n.reviewTitle : l10n.whatNeed,
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(child: _coordField(_dropoffLat, l10n.dropoffLat)),
-                const SizedBox(width: 12),
-                Expanded(child: _coordField(_dropoffLng, l10n.dropoffLng)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _cost,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
+            const SizedBox(height: 16),
+            Expanded(child: _stepBody(l10n)),
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  _error!,
+                  style: const TextStyle(color: Color(0xFFC2413B)),
+                ),
               ),
-              decoration: InputDecoration(labelText: l10n.estimatedCost),
-              validator: (value) {
-                final cost = double.tryParse(value?.trim() ?? '');
-                if (cost == null || cost < 0) return l10n.estimatedCost;
-                return null;
-              },
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _error!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
-            const SizedBox(height: 20),
             FilledButton(
-              onPressed: _submitting ? null : _submit,
-              child: Text(l10n.postErrand),
+              onPressed: _submitting ? null : _advance,
+              child: Text(_step == 2 ? l10n.postErrand : l10n.continueAction),
             ),
           ],
         ),
@@ -159,20 +97,196 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     );
   }
 
-  Widget _coordField(TextEditingController controller, String label) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(
-        decimal: true,
-        signed: true,
-      ),
-      decoration: InputDecoration(labelText: label),
-      validator: (value) {
-        final number = double.tryParse(value?.trim() ?? '');
-        if (number == null) return label;
-        return null;
-      },
+  Widget _stepBody(AppLocalizations l10n) {
+    if (_step == 0) {
+      return ListView(
+        children: [
+          TextField(
+            controller: _title,
+            decoration: InputDecoration(hintText: l10n.describeErrand),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _description,
+            minLines: 3,
+            maxLines: 5,
+            decoration: InputDecoration(hintText: l10n.description),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            children: [
+              for (final type in const [
+                'store_pickup',
+                'delivery',
+                'home_chore',
+              ])
+                ChoiceChip(
+                  label: Text(taskTypeLabel(l10n, type)),
+                  selected: _taskType == type,
+                  selectedColor: AppTheme.teal.withValues(alpha: 0.15),
+                  onSelected: (_) => setState(() => _taskType = type),
+                ),
+            ],
+          ),
+        ],
+      );
+    }
+    if (_step == 1) {
+      return ListView(
+        children: [
+          FieldCaption(l10n.pickupAddress),
+          TextField(controller: _pickupAddress),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: _useMyLocation,
+              child: Text(l10n.useMyLocation),
+            ),
+          ),
+          FieldCaption(l10n.dropoffAddress),
+          TextField(controller: _dropoffAddress),
+          const SizedBox(height: 12),
+          FieldCaption(l10n.estimatedCost),
+          TextField(
+            controller: _cost,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          ),
+        ],
+      );
+    }
+    return ListView(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppTheme.line),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _title.text,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                        color: AppTheme.ink,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.teal.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      taskTypeLabel(l10n, _taskType),
+                      style: const TextStyle(
+                        color: AppTheme.teal,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _description.text,
+                style: const TextStyle(color: AppTheme.muted),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        _Place(
+          label: l10n.pickupAddress,
+          value: _pickupAddress.text,
+          color: AppTheme.teal,
+        ),
+        const SizedBox(height: 8),
+        _Place(
+          label: l10n.dropoffAddress,
+          value: _dropoffAddress.text,
+          color: AppTheme.copper,
+        ),
+        const SizedBox(height: 18),
+        Row(
+          children: [
+            Text(
+              l10n.estimatedCost,
+              style: const TextStyle(color: AppTheme.muted),
+            ),
+            const Spacer(),
+            Text(
+              'K ${_cost.text}',
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 22),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppTheme.line),
+          ),
+          child: Text(
+            l10n.paymentLater,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppTheme.muted),
+          ),
+        ),
+      ],
     );
+  }
+
+  void _advance() {
+    final l10n = context.l10n;
+    if (_step == 0) {
+      if (_title.text.trim().length < 3) {
+        setState(() => _error = l10n.title);
+        return;
+      }
+      if (_description.text.trim().isEmpty) {
+        setState(() => _error = l10n.description);
+        return;
+      }
+      setState(() {
+        _step = 1;
+        _error = null;
+      });
+      return;
+    }
+    if (_step == 1) {
+      if (_pickupAddress.text.trim().length < 3) {
+        setState(() => _error = l10n.pickupAddress);
+        return;
+      }
+      if (_dropoffAddress.text.trim().length < 3) {
+        setState(() => _error = l10n.dropoffAddress);
+        return;
+      }
+      final cost = double.tryParse(_cost.text.trim());
+      if (cost == null || cost < 0) {
+        setState(() => _error = l10n.estimatedCost);
+        return;
+      }
+      setState(() {
+        _step = 2;
+        _error = null;
+      });
+      return;
+    }
+    unawaited(_submit());
   }
 
   Future<void> _useMyLocation() async {
@@ -191,7 +305,6 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   }
 
   Future<void> _submit() async {
-    if (_formKey.currentState?.validate() != true) return;
     final pickup = GeoPoint(
       lat: double.parse(_pickupLat.text.trim()),
       lng: double.parse(_pickupLng.text.trim()),
@@ -231,5 +344,58 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
         _error = error.message;
       });
     }
+  }
+}
+
+class _Place extends StatelessWidget {
+  const new({required this.label, required this.value, required this.color});
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.field,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label.toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    letterSpacing: 0.5,
+                    color: AppTheme.muted,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.ink,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
