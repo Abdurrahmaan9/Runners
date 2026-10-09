@@ -24,18 +24,28 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> login(String phoneNumber) async {
-    await _submit(() => _repository.login(phoneNumber.trim()));
+  Future<void> login({
+    required String phoneNumber,
+    required String password,
+  }) async {
+    await _submit(
+      () => _repository.login(
+        phoneNumber: phoneNumber.trim(),
+        password: password,
+      ),
+    );
   }
 
   Future<void> register({
     required String phoneNumber,
+    required String password,
     required String fullName,
     required String role,
   }) async {
     await _submit(
       () => _repository.register(
         phoneNumber: phoneNumber.trim(),
+        password: password,
         fullName: fullName.trim(),
         role: role,
       ),

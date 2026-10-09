@@ -35,19 +35,25 @@ void main() {
   blocTest<AuthCubit, AuthState>(
     'emits unauthenticated when login fails',
     setUp: () {
-      when(() => repository.login(any())).thenThrow(
+      when(
+        () => repository.login(
+          phoneNumber: any(named: 'phoneNumber'),
+          password: any(named: 'password'),
+        ),
+      ).thenThrow(
         const ApiException(
           code: 'UNAUTHORIZED',
-          message: 'No account exists for this phone number',
+          message: 'Phone number or password is incorrect',
         ),
       );
     },
     build: () => AuthCubit(repository),
-    act: (cubit) => cubit.login('+260970000000'),
+    act: (cubit) =>
+        cubit.login(phoneNumber: '970000000', password: 'password123'),
     expect: () => [
       const AuthState(status: AuthStatus.unknown, submitting: true),
       const AuthState.unauthenticated(
-        message: 'No account exists for this phone number',
+        message: 'Phone number or password is incorrect',
       ),
     ],
   );

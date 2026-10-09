@@ -41,20 +41,22 @@ mix phx.server
 
 `mix setup` creates `runners_dev`, runs migrations, and seeds three users:
 
-| Phone | Role | Name |
-| --- | --- | --- |
-| +260971000001 | requester | Amina Banda |
-| +260971000002 | runner | Joseph Phiri |
-| +260971000003 | admin | Platform Admin |
+| Phone | Password | Role | Name |
+| --- | --- | --- | --- |
+| 971000001 | password123 | requester | Amina Banda |
+| 971000002 | password123 | runner | Joseph Phiri |
+| 971000003 | password123 | admin | Platform Admin |
+
+The API stores those numbers as `+260971000001`, `+260971000002`, and `+260971000003`.
 
 ### Authentication
 
-Registration and login are a mock phone flow. A registered phone number returns a JWT. There is no OTP. Do not deploy this authentication as-is.
+Register and log in with a phone number and password. Enter the local number, such as `971234567` or `0971234567`. The API prefixes `+260` and stores the E.164 form. Passwords are hashed with bcrypt.
 
 ```bash
 curl -s -X POST http://localhost:4000/api/auth/login \
   -H 'content-type: application/json' \
-  -d '{"phone_number":"+260971000001"}'
+  -d '{"phone_number":"971000001","password":"password123"}'
 ```
 
 Send the token as `Authorization: Bearer <token>`.
@@ -64,7 +66,7 @@ Send the token as `Authorization: Bearer <token>`.
 | Method | Path | Purpose |
 | --- | --- | --- |
 | POST | `/api/auth/register` | Register a requester or runner |
-| POST | `/api/auth/login` | Exchange a phone number for a JWT |
+| POST | `/api/auth/login` | Exchange a phone number and password for a JWT |
 | GET | `/api/auth/me` | Current user |
 | PATCH | `/api/runners/me/status` | `{"is_online": true}` |
 | POST | `/api/runners/me/location` | `{"lat": -15.3875, "lng": 28.3228}` every 10 seconds |
@@ -98,7 +100,7 @@ Connect to `ws://localhost:4000/socket/websocket?token=<jwt>`.
 
 The client lives in `runners_app/` and was created with Very Good CLI. It targets Android and iOS. Development talks to the local API: `http://10.0.2.2:4000` on the Android emulator, `http://127.0.0.1:4000` otherwise. Override either with `--dart-define=API_BASE_URL=...`.
 
-Sign in with a seeded phone number. There is no OTP. A requester posts an errand; a runner goes online, accepts it, and advances `assigned → runner arrived → in progress → completed`. Live tracking uses the Phoenix channel `task_tracking:<task_id>`.
+Sign in with a seeded phone number and `password123`. A requester posts an errand; a runner goes online, accepts it, and advances `assigned → runner arrived → in progress → completed`. Live tracking uses the Phoenix channel `task_tracking:<task_id>`.
 
 Google Maps tiles need an API key. Set `GOOGLE_MAPS_API_KEY` for Android, and put the same key in `GMSApiKey` inside `ios/Runner/Info.plist`. Without a key the map stays blank and the coordinates still show as text.
 

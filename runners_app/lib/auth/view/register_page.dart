@@ -14,12 +14,14 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _phone = TextEditingController();
+  final _password = TextEditingController();
   final _name = TextEditingController();
   var _role = 'requester';
 
   @override
   void dispose() {
     _phone.dispose();
+    _password.dispose();
     _name.dispose();
     super.dispose();
   }
@@ -54,7 +56,14 @@ class _RegisterPageState extends State<RegisterPage> {
             decoration: InputDecoration(
               labelText: l10n.phoneNumber,
               hintText: l10n.phoneHint,
+              prefixText: '+260 ',
             ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _password,
+            obscureText: true,
+            decoration: InputDecoration(labelText: l10n.password),
           ),
           const SizedBox(height: 16),
           Text(l10n.role, style: Theme.of(context).textTheme.titleSmall),
@@ -82,6 +91,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ? null
                 : () => context.read<AuthCubit>().register(
                     phoneNumber: _phone.text,
+                    password: _password.text,
                     fullName: _name.text,
                     role: _role,
                   ),

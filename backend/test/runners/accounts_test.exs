@@ -15,20 +15,22 @@ defmodule Runners.AccountsTest do
   test "register_user rejects public admin signup and duplicate phones" do
     assert {:error, changeset} =
              Accounts.register_user(%{
-               "phone_number" => "+260971112233",
+               "phone_number" => "971112233",
+               "password" => "password123",
                "full_name" => "Sneaky Admin",
                "role" => "admin"
              })
 
     assert "must be requester or runner" in errors_on(changeset).role
 
-    user = register_user!(%{phone_number: "+260 97 111 2234"})
+    user = register_user!(%{phone_number: "0971 112 234"})
 
     assert user.phone_number == "+260971112234"
 
     assert {:error, changeset} =
              Accounts.register_user(%{
-               "phone_number" => "+260971112234",
+               "phone_number" => "971112234",
+               "password" => "password123",
                "full_name" => "Second Person",
                "role" => "requester"
              })
@@ -36,12 +38,19 @@ defmodule Runners.AccountsTest do
     assert "is already registered" in errors_on(changeset).phone_number
   end
 
-  test "authenticate_by_phone finds a normalized number" do
-    user = register_user!(%{phone_number: "+260971234567"})
+  test "authenticate_by_phone_and_password accepts a local number" do
+    user = register_user!(%{phone_number: "971234567", password: "password123"})
 
-    assert {:ok, found} = Accounts.authenticate_by_phone("+260 97 123 4567")
+    assert {:ok, found} =
+             Accounts.authenticate_by_phone_and_password("0971234567", "password123")
+
     assert found.id == user.id
-    assert Accounts.authenticate_by_phone("+260970000000") == {:error, :invalid_credentials}
+
+    assert Accounts.authenticate_by_phone_and_password("971234567", "wrong-password") ==
+             {:error, :invalid_credentials}
+
+    assert Accounts.authenticate_by_phone_and_password("970000000", "password123") ==
+             {:error, :invalid_credentials}
   end
 
   test "set_online_status is limited to runners" do

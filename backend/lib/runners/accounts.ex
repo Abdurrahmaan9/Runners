@@ -36,18 +36,28 @@ defmodule Runners.Accounts do
   end
 
   @doc """
-  Mock login. Phase 1 trusts the phone number and does not send an OTP.
+  Checks a phone number and password. The phone may be a local number; it is
+  stored and compared as +260…
   """
-  def authenticate_by_phone(phone) when is_binary(phone) do
-    phone = User.normalize_phone(phone)
+  def authenticate_by_phone_and_password(phone, password)
+      when is_binary(phone) and is_binary(password) do
+    normalized = User.normalize_phone(phone)
+    user = User |> Repo.get_by(phone_number: normalized) |> preload_profile()
 
-    case Repo.get_by(User, phone_number: phone) do
-      nil -> {:error, :invalid_credentials}
-      user -> {:ok, Repo.preload(user, :runner_profile)}
+    cond do
+      user && Bcrypt.verify_pass(password, user.password_hash) ->
+        {:ok, user}
+
+      user ->
+        {:error, :invalid_credentials}
+
+      true ->
+        Bcrypt.no_user_verify()
+        {:error, :invalid_credentials}
     end
   end
 
-  def authenticate_by_phone(_phone), do: {:error, :invalid_credentials}
+  def authenticate_by_phone_and_password(_phone, _password), do: {:error, :invalid_credentials}
 
   def get_user(id) do
     case Ecto.UUID.cast(id) do
@@ -95,8 +105,6 @@ defmodule Runners.Accounts do
   end
 
   defp maybe_create_runner_profile(_user), do: :ok
-
-  defp profile_for(%User{runner_profile: %RunnerProfile{} = profile}), do: profile
 
   defp profile_for(%User{} = user) do
     Repo.get_by(RunnerProfile, user_id: user.id)

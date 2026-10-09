@@ -28,20 +28,26 @@ class AuthRepository {
     }
   }
 
-  Future<AppUser> login(String phoneNumber) async {
+  Future<AppUser> login({
+    required String phoneNumber,
+    required String password,
+  }) async {
     final body = await _api.post('/api/auth/login', {
       'phone_number': phoneNumber,
+      'password': password,
     });
     return await _persist(body);
   }
 
   Future<AppUser> register({
     required String phoneNumber,
+    required String password,
     required String fullName,
     required String role,
   }) async {
     final body = await _api.post('/api/auth/register', {
       'phone_number': phoneNumber,
+      'password': password,
       'full_name': fullName,
       'role': role,
     });

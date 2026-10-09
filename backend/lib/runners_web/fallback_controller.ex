@@ -23,7 +23,7 @@ defmodule RunnersWeb.FallbackController do
   end
 
   def call(conn, {:error, :invalid_credentials}) do
-    render_error(conn, :unauthorized, "UNAUTHORIZED", "No account exists for this phone number")
+    render_error(conn, :unauthorized, "UNAUTHORIZED", "Phone number or password is incorrect")
   end
 
   def call(conn, {:error, :forbidden}) do

@@ -24,6 +24,10 @@ void main() {
     final httpClient = MockClient((request) async {
       expect(request.url.path, '/api/auth/login');
       expect(request.headers['content-type'], 'application/json');
+      expect(jsonDecode(request.body), {
+        'phone_number': '971000001',
+        'password': 'password123',
+      });
       return http.Response(
         jsonEncode({
           'data': {
@@ -48,7 +52,10 @@ void main() {
     final tokens = _MemoryTokens();
     final repository = AuthRepository(api: api, tokens: tokens);
 
-    final user = await repository.login('+260971000001');
+    final user = await repository.login(
+      phoneNumber: '971000001',
+      password: 'password123',
+    );
 
     expect(user.fullName, 'Amina Banda');
     expect(api.token, 'token-1');

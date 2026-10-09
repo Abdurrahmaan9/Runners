@@ -1,10 +1,9 @@
 defmodule RunnersWeb.AuthController do
   @moduledoc """
-  Phone-number registration and login.
+  Phone-number and password registration and login.
 
-  This is a mock flow for Phase 1. Presenting a registered phone number returns
-  a JWT. It does not send a one-time password and must be replaced before any
-  real deployment.
+  A local number such as 971234567 is stored as +260971234567. Passwords are
+  checked against a bcrypt hash.
   """
 
   use RunnersWeb, :controller
@@ -23,8 +22,9 @@ defmodule RunnersWeb.AuthController do
     end
   end
 
-  def login(conn, %{"phone_number" => phone_number}) do
-    with {:ok, user} <- Accounts.authenticate_by_phone(phone_number),
+  def login(conn, %{"phone_number" => phone_number, "password" => password})
+      when is_binary(phone_number) and is_binary(password) do
+    with {:ok, user} <- Accounts.authenticate_by_phone_and_password(phone_number, password),
          {:ok, token, _claims} <- Guardian.encode_and_sign(user) do
       render(conn, :show, user: user, token: token)
     end
@@ -34,7 +34,10 @@ defmodule RunnersWeb.AuthController do
     conn
     |> put_status(:unprocessable_entity)
     |> put_view(json: RunnersWeb.ErrorJSON)
-    |> render(:error, code: "VALIDATION_ERROR", message: "phone_number is required")
+    |> render(:error,
+      code: "VALIDATION_ERROR",
+      message: "phone_number and password are required"
+    )
   end
 
   def me(conn, _params) do

@@ -14,11 +14,13 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _phone = TextEditingController();
+  final _password = TextEditingController();
   var _creatingAccount = false;
 
   @override
   void dispose() {
     _phone.dispose();
+    _password.dispose();
     super.dispose();
   }
 
@@ -49,7 +51,14 @@ class _LoginPageState extends State<LoginPage> {
             decoration: InputDecoration(
               labelText: l10n.phoneNumber,
               hintText: l10n.phoneHint,
+              prefixText: '+260 ',
             ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _password,
+            obscureText: true,
+            decoration: InputDecoration(labelText: l10n.password),
           ),
           if (message != null) ...[
             const SizedBox(height: 12),
@@ -62,7 +71,10 @@ class _LoginPageState extends State<LoginPage> {
           FilledButton(
             onPressed: submitting
                 ? null
-                : () => context.read<AuthCubit>().login(_phone.text),
+                : () => context.read<AuthCubit>().login(
+                    phoneNumber: _phone.text,
+                    password: _password.text,
+                  ),
             child: submitting
                 ? const SizedBox.square(
                     dimension: 22,

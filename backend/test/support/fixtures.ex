@@ -21,6 +21,7 @@ defmodule Runners.Fixtures do
 
     params = %{
       "phone_number" => attrs[:phone_number] || attrs["phone_number"] || unique_phone(),
+      "password" => attrs[:password] || attrs["password"] || "password123",
       "full_name" => attrs[:full_name] || attrs["full_name"] || "Test User",
       "role" => role
     }

@@ -49,6 +49,7 @@ defmodule Runners.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
       {:guardian, "~> 2.3"},
+      {:bcrypt_elixir, "~> 3.2"},
       {:geo, "~> 4.0"},
       {:geo_postgis, "~> 3.7"},
       {:redix, "~> 1.5"}

@@ -24,6 +24,8 @@ config :runners, RunnersWeb.Endpoint,
 # Print only warnings and errors during test
 config :logger, level: :warning
 
+config :bcrypt_elixir, log_rounds: 4
+
 # Persist every GPS ping during tests so nearby queries see the latest point.
 config :runners, :location_sync_interval_seconds, 0
 config :runners, :redis_url, System.get_env("REDIS_URL", "redis://localhost:6379/1")

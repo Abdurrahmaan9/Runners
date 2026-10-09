@@ -200,7 +200,7 @@ class _PresenceCard extends StatelessWidget {
       child: SwitchListTile(
         value: presence.online,
         activeThumbColor: AppTheme.pine,
-        title: Text(presence.online ? l10n.goOnline : l10n.goOffline),
+        title: Text(presence.online ? l10n.goOffline : l10n.goOnline),
         subtitle: Text(
           presence.message ??
               (presence.online ? l10n.onlineBody : l10n.offlineBody),

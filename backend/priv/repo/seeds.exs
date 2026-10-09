@@ -1,8 +1,18 @@
 alias Runners.Accounts
 
 public_users = [
-  %{phone_number: "+260971000001", full_name: "Amina Banda", role: "requester"},
-  %{phone_number: "+260971000002", full_name: "Joseph Phiri", role: "runner"}
+  %{
+    phone_number: "971000001",
+    password: "password123",
+    full_name: "Amina Banda",
+    role: "requester"
+  },
+  %{
+    phone_number: "971000002",
+    password: "password123",
+    full_name: "Joseph Phiri",
+    role: "runner"
+  }
 ]
 
 for attrs <- public_users do
@@ -11,7 +21,12 @@ for attrs <- public_users do
   end
 end
 
-admin = %{phone_number: "+260971000003", full_name: "Platform Admin", role: "admin"}
+admin = %{
+  phone_number: "971000003",
+  password: "password123",
+  full_name: "Platform Admin",
+  role: "admin"
+}
 
 if is_nil(Accounts.get_user_by_phone(admin.phone_number)) do
   {:ok, _admin} = Accounts.register_user(admin, allow_admin: true)

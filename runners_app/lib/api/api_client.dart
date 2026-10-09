@@ -55,9 +55,9 @@ class ApiClient {
         message: 'The request timed out',
       );
     } on http.ClientException {
-      throw const ApiException(
+      throw ApiException(
         code: 'NETWORK',
-        message: 'Could not reach the Runners API',
+        message: 'Could not reach the Runners API at $baseUrl',
       );
     }
 
