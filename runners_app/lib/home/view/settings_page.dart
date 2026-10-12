@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/auth/auth.dart';
+import 'package:runners_app/home/view/about_page.dart';
+import 'package:runners_app/home/view/support_page.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/models/app_user.dart';
+import 'package:runners_app/tasks/view/errand_history_page.dart';
 import 'package:runners_app/theme/app_theme.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -14,7 +19,13 @@ class SettingsPage extends StatelessWidget {
     final user = context.select<AuthCubit, AppUser?>(
       (cubit) => cubit.state.user,
     );
-    if (user == null) return const SizedBox.shrink();
+    if (user == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) return;
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      });
+      return const Scaffold();
+    }
     final accent = user.isRunner ? AppTheme.copper : AppTheme.teal;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
@@ -73,6 +84,35 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 28),
+          _SettingsLink(
+            label: l10n.errandHistory,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ErrandHistoryPage(),
+                ),
+              );
+            },
+          ),
+          const Divider(height: 1, color: AppTheme.line),
+          _SettingsLink(
+            label: l10n.support,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const SupportPage()),
+              );
+            },
+          ),
+          const Divider(height: 1, color: AppTheme.line),
+          _SettingsLink(
+            label: l10n.aboutUs,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const AboutPage()),
+              );
+            },
+          ),
+          const Divider(height: 1, color: AppTheme.line),
           ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(
@@ -83,10 +123,37 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
             trailing: const Icon(Icons.chevron_right, color: Color(0xFFC2413B)),
-            onTap: () => context.read<AuthCubit>().logout(),
+            onTap: () {
+              final cubit = context.read<AuthCubit>();
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              unawaited(cubit.logout());
+            },
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SettingsLink extends StatelessWidget {
+  const new({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(
+        label,
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          color: AppTheme.ink,
+        ),
+      ),
+      trailing: const Icon(Icons.chevron_right, color: AppTheme.muted),
+      onTap: onTap,
     );
   }
 }
