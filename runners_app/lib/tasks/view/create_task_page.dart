@@ -11,6 +11,7 @@ import 'package:runners_app/tasks/data/task_repository.dart';
 import 'package:runners_app/tasks/view/task_labels.dart';
 import 'package:runners_app/theme/app_theme.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
+import 'package:runners_app/theme/glass.dart';
 
 class CreateTaskPage extends StatefulWidget {
   const new({this.initialType, super.key});
@@ -165,12 +166,9 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     }
     return ListView(
       children: [
-        Container(
+        Glass(
+          borderRadius: BorderRadius.circular(18),
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            border: Border.all(color: context.colors.line),
-            borderRadius: BorderRadius.circular(18),
-          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -240,17 +238,16 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
           ],
         ),
         const SizedBox(height: 16),
-        Container(
-          width: double.infinity,
+        Glass(
+          borderRadius: BorderRadius.circular(14),
           padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: context.colors.line),
-          ),
-          child: Text(
-            l10n.paymentLater,
-            textAlign: TextAlign.center,
-            style: TextStyle(color: context.colors.muted),
+          child: SizedBox(
+            width: double.infinity,
+            child: Text(
+              l10n.paymentLater,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: context.colors.muted),
+            ),
           ),
         ),
       ],
@@ -364,13 +361,9 @@ class _Place extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
+    return Glass(
+      borderRadius: BorderRadius.circular(16),
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: context.colors.field,
-        borderRadius: BorderRadius.circular(16),
-      ),
       child: Row(
         children: [
           Container(

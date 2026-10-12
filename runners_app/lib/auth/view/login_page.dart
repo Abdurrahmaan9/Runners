@@ -5,6 +5,7 @@ import 'package:runners_app/auth/view/forgot_password_page.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/theme/app_theme.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
+import 'package:runners_app/theme/glass.dart';
 
 class LoginPage extends StatefulWidget {
   const new({required this.onCreate, required this.onBack, super.key});
@@ -119,18 +120,6 @@ class _BackDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: context.colors.mist,
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onPressed,
-        child: SizedBox(
-          width: 42,
-          height: 42,
-          child: Icon(Icons.arrow_back, color: context.colors.ink),
-        ),
-      ),
-    );
+    return GlassIconButton(icon: Icons.arrow_back, onPressed: onPressed);
   }
 }

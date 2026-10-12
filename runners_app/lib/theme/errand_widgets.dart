@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/glass.dart';
 
 class ErrandPin {
   const new({required this.color, this.dx = 0.5, this.dy = 0.42});
@@ -81,20 +82,20 @@ class PhoneNumberField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          height: 58,
+        Glass(
+          borderRadius: BorderRadius.circular(16),
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: context.colors.field,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(
-            '+260',
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: 16,
-              color: context.colors.ink,
+          child: SizedBox(
+            height: 58,
+            child: Center(
+              child: Text(
+                '+260',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  color: context.colors.ink,
+                ),
+              ),
             ),
           ),
         ),
@@ -151,21 +152,10 @@ class SheetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
+    return Glass(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
-      decoration: BoxDecoration(
-        color: context.colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 24,
-            offset: Offset(0, -6),
-          ),
-        ],
-      ),
-      child: child,
+      child: SizedBox(width: double.infinity, child: child),
     );
   }
 }
@@ -177,26 +167,14 @@ class MapChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: context.colors.surface,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            color: context.colors.ink,
-          ),
+    return Glass(
+      borderRadius: BorderRadius.circular(20),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          color: context.colors.ink,
         ),
       ),
     );

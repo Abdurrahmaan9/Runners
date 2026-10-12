@@ -10,6 +10,7 @@ import 'package:runners_app/tasks/data/task_repository.dart';
 import 'package:runners_app/tasks/view/task_detail_page.dart';
 import 'package:runners_app/tasks/view/task_labels.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/glass.dart';
 
 enum AdminListKind {
   postedToday,
@@ -157,13 +158,9 @@ class _PersonRow extends StatelessWidget {
     final online = person.runnerProfile?.isOnline ?? false;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Container(
-        width: double.infinity,
+      child: Glass(
+        borderRadius: BorderRadius.circular(16),
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: context.colors.field,
-          borderRadius: BorderRadius.circular(16),
-        ),
         child: Row(
           children: [
             Expanded(
@@ -211,47 +208,41 @@ class _ErrandRow extends StatelessWidget {
     final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Material(
-        color: context.colors.field,
+      child: Glass(
         borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => unawaited(onOpen(task)),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        task.title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          color: context.colors.ink,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${taskTypeLabel(l10n, task.taskType)} · '
-                        '${task.dropoffAddress}',
-                        style: TextStyle(color: context.colors.muted),
-                      ),
-                    ],
+        padding: const EdgeInsets.all(14),
+        onTap: () => unawaited(onOpen(task)),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    task.title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: context.colors.ink,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  taskStatusLabel(l10n, task.status),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.teal,
+                  const SizedBox(height: 4),
+                  Text(
+                    '${taskTypeLabel(l10n, task.taskType)} · '
+                    '${task.dropoffAddress}',
+                    style: TextStyle(color: context.colors.muted),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+            const SizedBox(width: 12),
+            Text(
+              taskStatusLabel(l10n, task.status),
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                color: AppTheme.teal,
+              ),
+            ),
+          ],
         ),
       ),
     );

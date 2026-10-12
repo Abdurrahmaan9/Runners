@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/glass.dart';
 
 class SupportPage extends StatelessWidget {
   const new({super.key});
@@ -38,30 +39,29 @@ class _Topic extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Container(
-        width: double.infinity,
+      child: Glass(
+        borderRadius: BorderRadius.circular(16),
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: context.colors.field,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                fontSize: 16,
-                color: context.colors.ink,
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  color: context.colors.ink,
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              body,
-              style: TextStyle(color: context.colors.muted, height: 1.35),
-            ),
-          ],
+              const SizedBox(height: 6),
+              Text(
+                body,
+                style: TextStyle(color: context.colors.muted, height: 1.35),
+              ),
+            ],
+          ),
         ),
       ),
     );

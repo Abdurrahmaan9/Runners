@@ -4,6 +4,7 @@ import 'package:runners_app/auth/auth.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/theme/app_theme.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
+import 'package:runners_app/theme/glass.dart';
 
 class RegisterPage extends StatefulWidget {
   const new({required this.onCancel, required this.onLogin, super.key});
@@ -248,19 +249,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget _dot({required VoidCallback onTap}) {
-    return Material(
-      color: context.colors.mist,
-      shape: const CircleBorder(),
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: SizedBox(
-          width: 42,
-          height: 42,
-          child: Icon(Icons.arrow_back, color: context.colors.ink),
-        ),
-      ),
-    );
+    return GlassIconButton(icon: Icons.arrow_back, onPressed: onTap);
   }
 }
 
@@ -281,50 +270,38 @@ class _RoleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: context.colors.field,
+    return Glass(
       borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: selected ? color : Colors.transparent,
-              width: 1.4,
+      padding: const EdgeInsets.all(14),
+      onTap: onTap,
+      borderColor: selected ? color : null,
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(12),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: context.colors.ink,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        color: context.colors.ink,
-                      ),
-                    ),
-                    Text(body, style: TextStyle(color: context.colors.muted)),
-                  ],
-                ),
-              ),
-            ],
+                Text(body, style: TextStyle(color: context.colors.muted)),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

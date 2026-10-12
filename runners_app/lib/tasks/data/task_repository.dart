@@ -3,6 +3,7 @@ import 'package:runners_app/api/api_exception.dart';
 import 'package:runners_app/models/admin_stats.dart';
 import 'package:runners_app/models/app_user.dart';
 import 'package:runners_app/models/create_task_draft.dart';
+import 'package:runners_app/models/heatmap.dart';
 import 'package:runners_app/models/runner_task.dart';
 
 class TaskRepository {
@@ -20,6 +21,18 @@ class TaskRepository {
       );
     }
     return AdminStats.fromJson(Map<String, dynamic>.from(data));
+  }
+
+  Future<ErrandHeatmap> adminHeatmap() async {
+    final body = await _api.get('/api/admin/heatmap');
+    final data = body['data'];
+    if (data is! Map) {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'The server returned an unexpected response',
+      );
+    }
+    return ErrandHeatmap.fromJson(Map<String, dynamic>.from(data));
   }
 
   Future<List<RunnerTask>> adminErrands(String scope) async {

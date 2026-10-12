@@ -29,6 +29,26 @@ defmodule Runners.Admin do
 
   def stats(%User{}), do: {:error, :forbidden}
 
+  # Lusaka city box. Row 1 is the south edge; column 1 is the west edge.
+  @south -15.55
+  @north -15.25
+  @west 28.15
+  @east 28.45
+  @rows 6
+  @cols 8
+
+  def heatmap(%User{role: :admin}) do
+    cells =
+      heatmap_cells()
+      |> Enum.map(fn %{row: row, col: col, count: count} ->
+        %{row: as_int(row), col: as_int(col), count: as_int(count)}
+      end)
+
+    {:ok, %{rows: @rows, cols: @cols, cells: cells}}
+  end
+
+  def heatmap(%User{}), do: {:error, :forbidden}
+
   @errand_scopes ["today", "open", "underway", "completed"]
   @people_roles ["runner", "requester"]
 
@@ -105,6 +125,41 @@ defmodule Runners.Admin do
   defp errand_query("completed") do
     from task in Task, where: task.status == :completed
   end
+
+  defp heatmap_cells do
+    points =
+      from task in Task,
+        where: task.status != :cancelled and not is_nil(task.dropoff_location),
+        select: %{
+          row:
+            fragment(
+              "width_bucket(ST_Y(CAST(? AS geometry)), ?, ?, ?)",
+              task.dropoff_location,
+              ^@south,
+              ^@north,
+              ^@rows
+            ),
+          col:
+            fragment(
+              "width_bucket(ST_X(CAST(? AS geometry)), ?, ?, ?)",
+              task.dropoff_location,
+              ^@west,
+              ^@east,
+              ^@cols
+            )
+        }
+
+    Repo.all(
+      from point in subquery(points),
+        where: point.row >= 1 and point.row <= ^@rows,
+        where: point.col >= 1 and point.col <= ^@cols,
+        group_by: [point.row, point.col],
+        select: %{row: point.row, col: point.col, count: count()}
+    )
+  end
+
+  defp as_int(value) when is_integer(value), do: value
+  defp as_int(value), do: value |> to_string() |> String.to_integer()
 
   defp start_of_lusaka_day_utc do
     lusaka_now = DateTime.add(DateTime.utc_now(), @lusaka_offset_seconds, :second)

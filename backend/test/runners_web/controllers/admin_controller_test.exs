@@ -58,6 +58,22 @@ defmodule RunnersWeb.AdminControllerTest do
     assert json_response(conn, 422)["error"]["code"] == "VALIDATION_ERROR"
   end
 
+  test "an admin sees where errands are dropped off", %{conn: conn} do
+    admin = register_user!(%{role: "admin"})
+    requester = register_user!(%{role: "requester"})
+    create_task!(requester)
+
+    conn = conn |> login(admin) |> get(~p"/api/admin/heatmap")
+
+    assert %{
+             "data" => %{
+               "rows" => 6,
+               "cols" => 8,
+               "cells" => [%{"row" => 3, "col" => 6, "count" => 1}]
+             }
+           } = json_response(conn, 200)
+  end
+
   test "a requester cannot read admin stats", %{conn: conn} do
     requester = register_user!(%{role: "requester"})
 

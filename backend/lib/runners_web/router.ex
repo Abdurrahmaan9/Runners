@@ -22,6 +22,7 @@ defmodule RunnersWeb.Router do
 
     get "/auth/me", AuthController, :me
     get "/admin/stats", AdminController, :stats
+    get "/admin/heatmap", AdminController, :heatmap
     get "/admin/errands", AdminController, :errands
     get "/admin/people", AdminController, :people
 

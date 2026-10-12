@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/l10n/l10n.dart';
-import 'package:runners_app/theme/app_theme.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
+import 'package:runners_app/theme/glass.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const new({required this.onBack, super.key});
@@ -32,19 +32,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Material(
-                color: context.colors.mist,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: widget.onBack,
-                  child: SizedBox(
-                    width: 42,
-                    height: 42,
-                    child: Icon(Icons.arrow_back, color: context.colors.ink),
-                  ),
-                ),
-              ),
+              GlassIconButton(icon: Icons.arrow_back, onPressed: widget.onBack),
               const SizedBox(height: 28),
               Text(
                 l10n.resetTitle,

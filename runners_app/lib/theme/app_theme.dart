@@ -33,11 +33,16 @@ abstract final class AppTheme {
       error: const Color(0xFFC2413B),
     );
     const shape = StadiumBorder();
+    final dark = brightness == Brightness.dark;
+    final glassFill = dark ? const Color(0x66101815) : const Color(0x99FFFFFF);
+    final glassEdge = dark ? const Color(0x33FFFFFF) : const Color(0xE6FFFFFF);
+    final barFill = dark ? const Color(0xE615211C) : const Color(0xE6FFFFFF);
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
-      scaffoldBackgroundColor: colors.surface,
+      scaffoldBackgroundColor: Colors.transparent,
+      canvasColor: Colors.transparent,
       extensions: [colors],
       textTheme: TextTheme(
         headlineMedium: TextStyle(
@@ -61,15 +66,20 @@ abstract final class AppTheme {
         ),
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: colors.surface,
+        backgroundColor: barFill,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
         foregroundColor: colors.ink,
         elevation: 0,
         scrolledUnderElevation: 0,
+        shape: Border(bottom: BorderSide(color: glassEdge)),
       ),
       dividerTheme: DividerThemeData(color: colors.line, thickness: 1),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: colors.surface,
-        indicatorColor: teal.withValues(alpha: 0.15),
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        indicatorColor: teal.withValues(alpha: 0.18),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -83,15 +93,16 @@ abstract final class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: teal,
+          backgroundColor: glassFill,
           minimumSize: const Size.fromHeight(56),
-          side: const BorderSide(color: teal, width: 1.4),
+          side: BorderSide(color: glassEdge),
           shape: shape,
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: colors.field,
+        fillColor: glassFill,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 18,
@@ -103,7 +114,7 @@ abstract final class AppTheme {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: glassEdge),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -111,7 +122,7 @@ abstract final class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        color: colors.surface,
+        color: glassFill,
         elevation: 0,
         margin: EdgeInsets.zero,
       ),

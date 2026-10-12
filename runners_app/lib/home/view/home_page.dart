@@ -21,6 +21,7 @@ import 'package:runners_app/tasks/view/task_detail_page.dart';
 import 'package:runners_app/tasks/view/task_labels.dart';
 import 'package:runners_app/theme/app_theme.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
+import 'package:runners_app/theme/glass.dart';
 
 class HomePage extends StatelessWidget {
   const new({super.key});
@@ -163,12 +164,10 @@ class _RequesterHome extends StatelessWidget {
           Positioned(
             top: 48,
             right: 16,
-            child: IconButton.filled(
-              style: IconButton.styleFrom(
-                backgroundColor: context.colors.surface,
-              ),
+            child: GlassIconButton(
+              icon: Icons.person,
               onPressed: onSettings,
-              icon: Icon(Icons.person, color: context.colors.ink),
+              size: 48,
             ),
           ),
           Align(
@@ -240,39 +239,37 @@ class _RequesterHome extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 4,
                                 ),
-                                child: Material(
-                                  color: context.colors.field,
+                                child: Glass(
                                   borderRadius: BorderRadius.circular(16),
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(16),
-                                    onTap: () => onCreate(type),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 14,
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Container(
-                                            width: 36,
-                                            height: 28,
-                                            decoration: BoxDecoration(
-                                              color: AppTheme.teal,
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
+                                  onTap: () => onCreate(type),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          width: 36,
+                                          height: 28,
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.teal,
+                                            borderRadius: BorderRadius.circular(
+                                              10,
                                             ),
                                           ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            taskTypeLabel(l10n, type),
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w700,
-                                              color: context.colors.ink,
-                                            ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          taskTypeLabel(l10n, type),
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                            color: context.colors.ink,
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -468,12 +465,10 @@ class _RunnerHomeState extends State<_RunnerHome> {
           Positioned(
             top: 48,
             right: 16,
-            child: IconButton.filled(
-              style: IconButton.styleFrom(
-                backgroundColor: context.colors.surface,
-              ),
+            child: GlassIconButton(
+              icon: Icons.person,
               onPressed: widget.onSettings,
-              icon: Icon(Icons.person, color: context.colors.ink),
+              size: 48,
             ),
           ),
           Align(

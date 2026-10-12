@@ -20,6 +20,12 @@ defmodule RunnersWeb.AdminController do
     end
   end
 
+  def heatmap(conn, _params) do
+    with {:ok, map} <- Admin.heatmap(current_user(conn)) do
+      json(conn, %{data: map})
+    end
+  end
+
   def people(conn, params) do
     with {:ok, users} <- Admin.list_people(current_user(conn), params["role"]) do
       conn

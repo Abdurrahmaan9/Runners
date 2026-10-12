@@ -9,6 +9,7 @@ import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/models/app_user.dart';
 import 'package:runners_app/tasks/view/errand_history_page.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/glass.dart';
 import 'package:runners_app/theme/theme_cubit.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -42,12 +43,9 @@ class SettingsPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
-          Container(
+          Glass(
+            borderRadius: BorderRadius.circular(20),
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: context.colors.mist,
-              borderRadius: BorderRadius.circular(20),
-            ),
             child: Row(
               children: [
                 CircleAvatar(radius: 26, backgroundColor: accent),
@@ -94,66 +92,82 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 28),
-          _SettingsLink(
-            label: l10n.errandHistory,
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const ErrandHistoryPage(),
+          Glass(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Column(
+              children: [
+                _SettingsLink(
+                  label: l10n.errandHistory,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const ErrandHistoryPage(),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-          Divider(height: 1, color: context.colors.line),
-          _SettingsLink(
-            label: l10n.support,
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const SupportPage()),
-              );
-            },
-          ),
-          Divider(height: 1, color: context.colors.line),
-          _SettingsLink(
-            label: l10n.aboutUs,
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const AboutPage()),
-              );
-            },
-          ),
-          Divider(height: 1, color: context.colors.line),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              l10n.darkMode,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: context.colors.ink,
-              ),
+                Divider(height: 1, color: context.colors.line),
+                _SettingsLink(
+                  label: l10n.support,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const SupportPage(),
+                      ),
+                    );
+                  },
+                ),
+                Divider(height: 1, color: context.colors.line),
+                _SettingsLink(
+                  label: l10n.aboutUs,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const AboutPage(),
+                      ),
+                    );
+                  },
+                ),
+                Divider(height: 1, color: context.colors.line),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    l10n.darkMode,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: context.colors.ink,
+                    ),
+                  ),
+                  value: context.watch<ThemeCubit>().state == ThemeMode.dark,
+                  activeThumbColor: AppTheme.teal,
+                  onChanged: (enabled) {
+                    unawaited(
+                      context.read<ThemeCubit>().setDark(enabled: enabled),
+                    );
+                  },
+                ),
+                Divider(height: 1, color: context.colors.line),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    l10n.signOut,
+                    style: const TextStyle(
+                      color: Color(0xFFC2413B),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFFC2413B),
+                  ),
+                  onTap: () {
+                    final cubit = context.read<AuthCubit>();
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    unawaited(cubit.logout());
+                  },
+                ),
+              ],
             ),
-            value: context.watch<ThemeCubit>().state == ThemeMode.dark,
-            activeThumbColor: AppTheme.teal,
-            onChanged: (enabled) {
-              unawaited(context.read<ThemeCubit>().setDark(enabled: enabled));
-            },
-          ),
-          Divider(height: 1, color: context.colors.line),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              l10n.signOut,
-              style: const TextStyle(
-                color: Color(0xFFC2413B),
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            trailing: const Icon(Icons.chevron_right, color: Color(0xFFC2413B)),
-            onTap: () {
-              final cubit = context.read<AuthCubit>();
-              Navigator.of(context).popUntil((route) => route.isFirst);
-              unawaited(cubit.logout());
-            },
           ),
         ],
       ),

@@ -8,6 +8,7 @@ import 'package:runners_app/auth/auth.dart';
 import 'package:runners_app/auth/view/auth_gate.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/glass.dart';
 import 'package:runners_app/theme/theme_cubit.dart';
 
 class App extends StatelessWidget {
@@ -58,6 +59,14 @@ class AppView extends StatelessWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: mode,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            const IgnorePointer(child: LiquidWash()),
+            ?child,
+          ],
+        );
+      },
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: const AuthGate(),
