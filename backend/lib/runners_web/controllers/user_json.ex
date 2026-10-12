@@ -5,6 +5,10 @@ defmodule RunnersWeb.UserJSON do
   alias Runners.Accounts.User
   alias Runners.Geospatial.Point
 
+  def index(%{users: users}) do
+    %{data: Enum.map(users, &data/1)}
+  end
+
   def show(%{user: user}) do
     %{data: data(user)}
   end

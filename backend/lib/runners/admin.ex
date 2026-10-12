@@ -29,10 +29,41 @@ defmodule Runners.Admin do
 
   def stats(%User{}), do: {:error, :forbidden}
 
-  defp count_posted_today do
-    start = start_of_lusaka_day_utc()
+  @errand_scopes ["today", "open", "underway", "completed"]
+  @people_roles ["runner", "requester"]
 
-    Repo.one(from task in Task, where: task.inserted_at >= ^start, select: count(task.id))
+  def list_errands(%User{role: :admin}, scope) when scope in @errand_scopes do
+    tasks =
+      scope
+      |> errand_query()
+      |> order_by([task], desc: task.inserted_at)
+      |> Repo.all()
+      |> Repo.preload([:requester, :runner])
+
+    {:ok, tasks}
+  end
+
+  def list_errands(%User{role: :admin}, _scope), do: {:error, :invalid_admin_scope}
+  def list_errands(%User{}, _scope), do: {:error, :forbidden}
+
+  def list_people(%User{role: :admin}, role) when role in @people_roles do
+    role_atom = String.to_existing_atom(role)
+
+    users =
+      User
+      |> where([user], user.role == ^role_atom)
+      |> order_by([user], asc: user.full_name)
+      |> Repo.all()
+      |> Repo.preload(:runner_profile)
+
+    {:ok, users}
+  end
+
+  def list_people(%User{role: :admin}, _role), do: {:error, :invalid_admin_role}
+  def list_people(%User{}, _role), do: {:error, :forbidden}
+
+  defp count_posted_today do
+    Repo.one(from task in errand_query("today"), select: count(task.id))
   end
 
   defp count_role(role) do
@@ -48,16 +79,31 @@ defmodule Runners.Admin do
     )
   end
 
-  defp count_status(status) do
-    Repo.one(from task in Task, where: task.status == ^status, select: count(task.id))
-  end
+  defp count_status(:posted),
+    do: Repo.one(from task in errand_query("open"), select: count(task.id))
+
+  defp count_status(:completed),
+    do: Repo.one(from task in errand_query("completed"), select: count(task.id))
 
   defp count_active_errands do
-    Repo.one(
-      from task in Task,
-        where: task.status in [:assigned, :runner_arrived, :in_progress],
-        select: count(task.id)
-    )
+    Repo.one(from task in errand_query("underway"), select: count(task.id))
+  end
+
+  defp errand_query("today") do
+    start = start_of_lusaka_day_utc()
+    from task in Task, where: task.inserted_at >= ^start
+  end
+
+  defp errand_query("open") do
+    from task in Task, where: task.status == :posted
+  end
+
+  defp errand_query("underway") do
+    from task in Task, where: task.status in [:assigned, :runner_arrived, :in_progress]
+  end
+
+  defp errand_query("completed") do
+    from task in Task, where: task.status == :completed
   end
 
   defp start_of_lusaka_day_utc do

@@ -22,6 +22,8 @@ defmodule RunnersWeb.Router do
 
     get "/auth/me", AuthController, :me
     get "/admin/stats", AdminController, :stats
+    get "/admin/errands", AdminController, :errands
+    get "/admin/people", AdminController, :people
 
     patch "/runners/me/status", RunnerController, :update_status
     post "/runners/me/location", RunnerController, :update_location

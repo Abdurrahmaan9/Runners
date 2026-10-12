@@ -38,6 +38,24 @@ defmodule RunnersWeb.FallbackController do
     render_error(conn, :conflict, "INVALID_TRANSITION", "Task cannot move to that status")
   end
 
+  def call(conn, {:error, :invalid_admin_scope}) do
+    render_error(
+      conn,
+      :unprocessable_entity,
+      "VALIDATION_ERROR",
+      "scope must be today, open, underway, or completed"
+    )
+  end
+
+  def call(conn, {:error, :invalid_admin_role}) do
+    render_error(
+      conn,
+      :unprocessable_entity,
+      "VALIDATION_ERROR",
+      "role must be runner or requester"
+    )
+  end
+
   def call(conn, {:error, :invalid_status_filter}) do
     render_error(
       conn,

@@ -1,6 +1,7 @@
 import 'package:runners_app/api/api_client.dart';
 import 'package:runners_app/api/api_exception.dart';
 import 'package:runners_app/models/admin_stats.dart';
+import 'package:runners_app/models/app_user.dart';
 import 'package:runners_app/models/create_task_draft.dart';
 import 'package:runners_app/models/runner_task.dart';
 
@@ -19,6 +20,21 @@ class TaskRepository {
       );
     }
     return AdminStats.fromJson(Map<String, dynamic>.from(data));
+  }
+
+  Future<List<RunnerTask>> adminErrands(String scope) async {
+    final body = await _api.get('/api/admin/errands?scope=$scope');
+    return tasksFromBody(body);
+  }
+
+  Future<List<AppUser>> adminPeople(String role) async {
+    final body = await _api.get('/api/admin/people?role=$role');
+    final data = body['data'];
+    if (data is! List) return const [];
+    return [
+      for (final item in data)
+        if (item is Map) AppUser.fromJson(Map<String, dynamic>.from(item)),
+    ];
   }
 
   Future<List<RunnerTask>> list({String? status}) async {
