@@ -46,6 +46,20 @@
     "stepThree": "Step 3 of 3",
     "paymentLater": "Payment method arrives in Phase 2",
     "settings": "Settings",
+    "dashboard": "Dashboard",
+    "postedToday": "Posted today",
+    "runners": "Runners",
+    "activeRunners": "{count} active",
+    "@activeRunners": {
+        "placeholders": {
+            "count": {"type": "int"}
+        }
+    },
+    "requesters": "Requesters",
+    "openErrands": "Open errands",
+    "errandsUnderway": "Underway",
+    "completedErrands": "Completed",
+    "admin": "Admin",
     "errandHistory": "Errand history",
     "postedErrands": "Posted",
     "acceptedErrands": "Accepted",

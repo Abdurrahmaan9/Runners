@@ -65,6 +65,7 @@ class AppUser extends Equatable {
 
   bool get isRunner => role == 'runner';
   bool get isRequester => role == 'requester';
+  bool get isAdmin => role == 'admin';
 
   @override
   List<Object?> get props => [

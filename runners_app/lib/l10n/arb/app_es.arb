@@ -46,6 +46,20 @@
     "stepThree": "Paso 3 de 3",
     "paymentLater": "El pago llega en la fase 2",
     "settings": "Ajustes",
+    "dashboard": "Panel",
+    "postedToday": "Publicados hoy",
+    "runners": "Runners",
+    "activeRunners": "{count} activos",
+    "@activeRunners": {
+        "placeholders": {
+            "count": {"type": "int"}
+        }
+    },
+    "requesters": "Solicitantes",
+    "openErrands": "Recados abiertos",
+    "errandsUnderway": "En curso",
+    "completedErrands": "Completados",
+    "admin": "Admin",
     "errandHistory": "Historial de recados",
     "postedErrands": "Publicados",
     "acceptedErrands": "Aceptados",

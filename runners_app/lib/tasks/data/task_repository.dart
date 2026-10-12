@@ -1,5 +1,6 @@
 import 'package:runners_app/api/api_client.dart';
 import 'package:runners_app/api/api_exception.dart';
+import 'package:runners_app/models/admin_stats.dart';
 import 'package:runners_app/models/create_task_draft.dart';
 import 'package:runners_app/models/runner_task.dart';
 
@@ -7,6 +8,18 @@ class TaskRepository {
   new({required ApiClient api}) : _api = api;
 
   final ApiClient _api;
+
+  Future<AdminStats> adminStats() async {
+    final body = await _api.get('/api/admin/stats');
+    final data = body['data'];
+    if (data is! Map) {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'The server returned an unexpected response',
+      );
+    }
+    return AdminStats.fromJson(Map<String, dynamic>.from(data));
+  }
 
   Future<List<RunnerTask>> list({String? status}) async {
     final query = status == null ? '' : '?status=$status';

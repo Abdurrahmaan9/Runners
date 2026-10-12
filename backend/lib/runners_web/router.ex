@@ -21,6 +21,7 @@ defmodule RunnersWeb.Router do
     pipe_through [:api, :auth]
 
     get "/auth/me", AuthController, :me
+    get "/admin/stats", AdminController, :stats
 
     patch "/runners/me/status", RunnerController, :update_status
     post "/runners/me/location", RunnerController, :update_location

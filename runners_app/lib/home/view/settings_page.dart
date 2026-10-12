@@ -26,7 +26,16 @@ class SettingsPage extends StatelessWidget {
       });
       return const Scaffold();
     }
-    final accent = user.isRunner ? AppTheme.copper : AppTheme.teal;
+    final accent = switch (user.role) {
+      'runner' => AppTheme.copper,
+      'admin' => AppTheme.tealDeep,
+      _ => AppTheme.teal,
+    };
+    final roleLabel = switch (user.role) {
+      'runner' => l10n.verifiedRunner,
+      'admin' => l10n.admin,
+      _ => l10n.requester,
+    };
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
@@ -69,7 +78,7 @@ class SettingsPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          user.isRunner ? l10n.verifiedRunner : l10n.requester,
+                          roleLabel,
                           style: TextStyle(
                             color: accent,
                             fontWeight: FontWeight.w700,

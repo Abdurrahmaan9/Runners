@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/auth/auth.dart';
 import 'package:runners_app/config/app_config.dart';
 import 'package:runners_app/home/cubit/dispatch_cubit.dart';
+import 'package:runners_app/home/view/admin_home.dart';
 import 'package:runners_app/home/view/settings_page.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/models/app_user.dart';
@@ -30,6 +31,7 @@ class HomePage extends StatelessWidget {
       (cubit) => cubit.state.user,
     );
     if (user == null) return const SizedBox.shrink();
+    if (user.isAdmin) return const AdminHome();
     final token = context.read<AuthRepository>().token;
     final config = context.read<AppConfig>();
 
@@ -459,9 +461,7 @@ class _RunnerHomeState extends State<_RunnerHome> {
           Positioned(
             top: 56,
             left: 20,
-            child: MapChip(
-              presence.online ? l10n.goOffline : l10n.goOnline,
-            ),
+            child: MapChip(presence.online ? l10n.goOffline : l10n.goOnline),
           ),
           Positioned(
             top: 48,
