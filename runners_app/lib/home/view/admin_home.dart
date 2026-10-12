@@ -13,6 +13,7 @@ import 'package:runners_app/models/admin_stats.dart';
 import 'package:runners_app/models/heatmap.dart';
 import 'package:runners_app/tasks/data/task_repository.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/errand_logo.dart';
 import 'package:runners_app/theme/glass.dart';
 
 class AdminHome extends StatefulWidget {
@@ -146,9 +147,15 @@ class _DashboardTabState extends State<_DashboardTab> {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
           children: [
-            Text(
-              l10n.dashboard,
-              style: Theme.of(context).textTheme.headlineMedium,
+            Row(
+              children: [
+                const ErrandLogo(style: ErrandLogoStyle.mark, height: 32),
+                const SizedBox(width: 10),
+                Text(
+                  l10n.dashboard,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+              ],
             ),
             const SizedBox(height: 20),
             if (_loading && stats == null)
@@ -358,9 +365,15 @@ class _HubTab extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
         children: [
-          Text(
-            errands ? l10n.errands : l10n.people,
-            style: Theme.of(context).textTheme.headlineMedium,
+          Row(
+            children: [
+              const ErrandLogo(style: ErrandLogoStyle.mark, height: 32),
+              const SizedBox(width: 10),
+              Text(
+                errands ? l10n.errands : l10n.people,
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+            ],
           ),
           if (!errands) ...[
             const SizedBox(height: 12),

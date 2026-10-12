@@ -6,6 +6,7 @@ import 'package:runners_app/auth/view/login_page.dart';
 import 'package:runners_app/auth/view/register_page.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/errand_logo.dart';
 import 'package:runners_app/theme/glass.dart';
 import 'package:runners_app/theme/theme_cubit.dart';
 
@@ -126,14 +127,7 @@ class _Hero extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text(
-                    l10n.appTitle,
-                    style: const TextStyle(
-                      color: AppTheme.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
-                    ),
-                  ),
+                  const ErrandLogo(onBrand: true, height: 32),
                   const Spacer(),
                   IconButton(
                     onPressed: () {
@@ -189,13 +183,11 @@ class _Feature extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(14),
-              ),
+            ErrandLogo(
+              style: color == AppTheme.copper
+                  ? ErrandLogoStyle.runner
+                  : ErrandLogoStyle.mark,
+              height: 40,
             ),
             const SizedBox(width: 14),
             Expanded(

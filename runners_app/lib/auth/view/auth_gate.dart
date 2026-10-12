@@ -4,6 +4,7 @@ import 'package:runners_app/auth/auth.dart';
 import 'package:runners_app/auth/view/welcome_page.dart';
 import 'package:runners_app/home/view/home_page.dart';
 import 'package:runners_app/l10n/l10n.dart';
+import 'package:runners_app/theme/errand_logo.dart';
 
 class AuthGate extends StatelessWidget {
   const new({super.key});
@@ -19,6 +20,8 @@ class AuthGate extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const ErrandLogo(height: 48),
+              const SizedBox(height: 20),
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
               Text(context.l10n.waiting),

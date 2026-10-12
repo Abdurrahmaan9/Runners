@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/errand_logo.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
 
 class AboutPage extends StatelessWidget {
@@ -24,14 +25,7 @@ class AboutPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  l10n.appTitle,
-                  style: const TextStyle(
-                    color: AppTheme.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
-                ),
+                const ErrandLogo(onBrand: true),
                 const SizedBox(height: 12),
                 Text(
                   l10n.aboutLead,

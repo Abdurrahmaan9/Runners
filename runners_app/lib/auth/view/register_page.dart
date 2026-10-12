@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/auth/auth.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/errand_logo.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
 import 'package:runners_app/theme/glass.dart';
 
@@ -119,14 +120,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _roleStep(AppLocalizations l10n) {
     return ListView(
       children: [
-        Text(
-          l10n.appTitle,
-          style: const TextStyle(
-            color: AppTheme.teal,
-            fontWeight: FontWeight.w800,
-            fontSize: 18,
-          ),
-        ),
+        const ErrandLogo(),
         const SizedBox(height: 28),
         Text(
           l10n.chooseRoleTitle,
@@ -207,13 +201,11 @@ class _RegisterPageState extends State<RegisterPage> {
         const SizedBox(height: 8),
         Text(l10n.profileLead),
         const SizedBox(height: 24),
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            color: accent.withValues(alpha: 0.15),
-            shape: BoxShape.circle,
-          ),
+        ErrandLogo(
+          style: accent == AppTheme.copper
+              ? ErrandLogoStyle.runner
+              : ErrandLogoStyle.mark,
+          height: 64,
         ),
         const SizedBox(height: 18),
         FieldCaption(l10n.fullName),
@@ -277,13 +269,11 @@ class _RoleCard extends StatelessWidget {
       borderColor: selected ? color : null,
       child: Row(
         children: [
-          Container(
-            width: 42,
+          ErrandLogo(
+            style: color == AppTheme.copper
+                ? ErrandLogoStyle.runner
+                : ErrandLogoStyle.mark,
             height: 42,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(12),
-            ),
           ),
           const SizedBox(width: 12),
           Expanded(

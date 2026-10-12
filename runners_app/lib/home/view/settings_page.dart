@@ -9,6 +9,7 @@ import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/models/app_user.dart';
 import 'package:runners_app/tasks/view/errand_history_page.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/errand_logo.dart';
 import 'package:runners_app/theme/glass.dart';
 import 'package:runners_app/theme/theme_cubit.dart';
 
@@ -48,7 +49,15 @@ class SettingsPage extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                CircleAvatar(radius: 26, backgroundColor: accent),
+                CircleAvatar(
+                  radius: 26,
+                  backgroundColor: accent,
+                  child: const ErrandLogo(
+                    style: ErrandLogoStyle.mark,
+                    onBrand: true,
+                    height: 32,
+                  ),
+                ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(

@@ -4,6 +4,7 @@ import 'package:runners_app/auth/auth.dart';
 import 'package:runners_app/auth/view/forgot_password_page.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/errand_logo.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
 import 'package:runners_app/theme/glass.dart';
 
@@ -51,7 +52,9 @@ class _LoginPageState extends State<LoginPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _BackDot(onPressed: widget.onBack),
-              const SizedBox(height: 28),
+              const SizedBox(height: 20),
+              const ErrandLogo(),
+              const SizedBox(height: 20),
               Text(
                 l10n.welcomeBack,
                 style: Theme.of(context).textTheme.headlineMedium,

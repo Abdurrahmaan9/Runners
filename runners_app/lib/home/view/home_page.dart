@@ -20,6 +20,7 @@ import 'package:runners_app/tasks/view/create_task_page.dart';
 import 'package:runners_app/tasks/view/task_detail_page.dart';
 import 'package:runners_app/tasks/view/task_labels.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/errand_logo.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
 import 'package:runners_app/theme/glass.dart';
 
@@ -193,6 +194,8 @@ class _RequesterHome extends StatelessWidget {
                           ),
                         ),
                       ),
+                      const ErrandLogo(style: ErrandLogoStyle.mark, height: 28),
+                      const SizedBox(height: 10),
                       Text(
                         l10n.whatNeed,
                         style: Theme.of(context).textTheme.titleLarge,
@@ -341,6 +344,12 @@ class _RunnerHomeState extends State<_RunnerHome> {
               children: [
                 Row(
                   children: [
+                    const ErrandLogo(
+                      style: ErrandLogoStyle.mark,
+                      onBrand: true,
+                      height: 28,
+                    ),
+                    const SizedBox(width: 10),
                     Text(
                       l10n.newErrandNearby,
                       style: const TextStyle(
@@ -478,6 +487,8 @@ class _RunnerHomeState extends State<_RunnerHome> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const ErrandLogo(style: ErrandLogoStyle.runner, height: 28),
+                  const SizedBox(height: 8),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     value: presence.online,

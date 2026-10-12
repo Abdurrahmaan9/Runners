@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/l10n/l10n.dart';
+import 'package:runners_app/theme/errand_logo.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
 import 'package:runners_app/theme/glass.dart';
 
@@ -33,7 +34,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               GlassIconButton(icon: Icons.arrow_back, onPressed: widget.onBack),
-              const SizedBox(height: 28),
+              const SizedBox(height: 20),
+              const ErrandLogo(),
+              const SizedBox(height: 20),
               Text(
                 l10n.resetTitle,
                 style: Theme.of(context).textTheme.headlineMedium,
