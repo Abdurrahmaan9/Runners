@@ -7,6 +7,7 @@ defmodule Runners.Admin do
 
   import Ecto.Query, warn: false
 
+  alias Runners.Accounts
   alias Runners.Accounts.RunnerProfile
   alias Runners.Accounts.User
   alias Runners.Repo
@@ -81,6 +82,47 @@ defmodule Runners.Admin do
 
   def list_people(%User{role: :admin}, _role), do: {:error, :invalid_admin_role}
   def list_people(%User{}, _role), do: {:error, :forbidden}
+
+  def create_person(%User{role: :admin}, attrs) when is_map(attrs) do
+    if person_role(attrs) in @people_roles do
+      Accounts.register_user(attrs)
+    else
+      {:error, :invalid_admin_role}
+    end
+  end
+
+  def create_person(%User{}, _attrs), do: {:error, :forbidden}
+
+  def get_person(%User{role: :admin}, id), do: fetch_person(id)
+  def get_person(%User{}, _id), do: {:error, :forbidden}
+
+  def update_person(%User{role: :admin}, id, attrs) do
+    with {:ok, user} <- fetch_person(id) do
+      Accounts.update_user(user, attrs)
+    end
+  end
+
+  def update_person(%User{}, _id, _attrs), do: {:error, :forbidden}
+
+  def set_person_blocked(%User{role: :admin}, id, blocked) when is_boolean(blocked) do
+    with {:ok, user} <- fetch_person(id) do
+      Accounts.set_blocked(user, blocked)
+    end
+  end
+
+  def set_person_blocked(%User{}, _id, _blocked), do: {:error, :forbidden}
+
+  defp person_role(attrs) do
+    to_string(attrs["role"] || attrs[:role])
+  end
+
+  defp fetch_person(id) do
+    case Accounts.get_user(id) do
+      %User{role: role} = user when role in [:runner, :requester] -> {:ok, user}
+      %User{} -> {:error, :forbidden}
+      nil -> {:error, :not_found}
+    end
+  end
 
   defp count_posted_today do
     Repo.one(from task in errand_query("today"), select: count(task.id))

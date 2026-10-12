@@ -45,6 +45,9 @@ defmodule Runners.Accounts do
     user = User |> Repo.get_by(phone_number: normalized) |> preload_profile()
 
     cond do
+      user && user.blocked && Bcrypt.verify_pass(password, user.password_hash) ->
+        {:error, :blocked}
+
       user && Bcrypt.verify_pass(password, user.password_hash) ->
         {:ok, user}
 
@@ -83,6 +86,36 @@ defmodule Runners.Accounts do
     |> preload_profile()
   end
 
+  def update_user(%User{} = user, attrs) do
+    Repo.transaction(fn ->
+      case user |> User.admin_update_changeset(attrs) |> Repo.update() do
+        {:ok, user} ->
+          ensure_runner_profile(user)
+          user |> Repo.preload(:runner_profile, force: true)
+
+        {:error, changeset} ->
+          Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  def set_blocked(%User{role: :admin}, _blocked), do: {:error, :forbidden}
+
+  def set_blocked(%User{} = user, blocked) when is_boolean(blocked) do
+    Repo.transaction(fn ->
+      case user |> Ecto.Changeset.change(blocked: blocked) |> Repo.update() do
+        {:ok, user} ->
+          if blocked, do: force_offline(user)
+          user |> Repo.preload(:runner_profile, force: true)
+
+        {:error, changeset} ->
+          Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  def set_blocked(_user, _blocked), do: {:error, :invalid_blocked_flag}
+
   def set_online_status(%User{role: :runner} = user, is_online) when is_boolean(is_online) do
     case profile_for(user) do
       nil ->
@@ -97,6 +130,26 @@ defmodule Runners.Accounts do
 
   def set_online_status(%User{}, is_online) when is_boolean(is_online), do: {:error, :forbidden}
   def set_online_status(_user, _is_online), do: {:error, :invalid_online_flag}
+
+  defp ensure_runner_profile(%User{role: :runner} = user) do
+    if profile_for(user), do: :ok, else: maybe_create_runner_profile(user)
+  end
+
+  defp ensure_runner_profile(_user), do: :ok
+
+  defp force_offline(%User{role: :runner} = user) do
+    case profile_for(user) do
+      nil ->
+        :ok
+
+      profile ->
+        profile
+        |> Ecto.Changeset.change(is_online: false)
+        |> Repo.update!()
+    end
+  end
+
+  defp force_offline(_user), do: :ok
 
   defp maybe_create_runner_profile(%User{role: :runner} = user) do
     %RunnerProfile{}

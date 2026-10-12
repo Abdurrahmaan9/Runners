@@ -20,6 +20,8 @@ defmodule RunnersWeb.UserJSON do
       full_name: user.full_name,
       role: user.role,
       is_verified: user.is_verified,
+      blocked: user.blocked,
+      inserted_at: user.inserted_at,
       runner_profile: profile(user.runner_profile)
     }
   end

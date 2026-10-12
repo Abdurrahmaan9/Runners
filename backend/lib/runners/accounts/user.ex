@@ -21,6 +21,7 @@ defmodule Runners.Accounts.User do
     field :password_hash, :string, redact: true
     field :role, Ecto.Enum, values: @roles
     field :is_verified, :boolean, default: false
+    field :blocked, :boolean, default: false
 
     has_one :runner_profile, Runners.Accounts.RunnerProfile
 
@@ -66,6 +67,17 @@ defmodule Runners.Accounts.User do
     user
     |> cast(attrs, [:phone_number, :full_name, :role, :password])
     |> validate_required([:phone_number, :full_name, :role, :password])
+    |> shared_validations()
+    |> validate_inclusion(:role, @public_roles, message: "must be requester or runner")
+  end
+
+  @doc """
+  Admin edit of a requester or runner. Password is optional.
+  """
+  def admin_update_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:phone_number, :full_name, :role, :password])
+    |> validate_required([:phone_number, :full_name, :role])
     |> shared_validations()
     |> validate_inclusion(:role, @public_roles, message: "must be requester or runner")
   end

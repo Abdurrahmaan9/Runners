@@ -40,6 +40,48 @@ class TaskRepository {
     return tasksFromBody(body);
   }
 
+  Future<AppUser> adminCreatePerson({
+    required String phoneNumber,
+    required String password,
+    required String fullName,
+    required String role,
+  }) async {
+    final body = await _api.post('/api/admin/people', {
+      'phone_number': phoneNumber,
+      'password': password,
+      'full_name': fullName,
+      'role': role,
+    });
+    return _user(body);
+  }
+
+  Future<AppUser> adminUpdatePerson({
+    required String id,
+    required String phoneNumber,
+    required String fullName,
+    required String role,
+    String? password,
+  }) async {
+    final body = await _api.patch('/api/admin/people/$id', {
+      'phone_number': phoneNumber,
+      'full_name': fullName,
+      'role': role,
+      if (password != null && password.isNotEmpty) 'password': password,
+    });
+    return _user(body);
+  }
+
+  Future<AppUser> adminSetBlocked({
+    required String id,
+    required bool blocked,
+  }) async {
+    final path = blocked
+        ? '/api/admin/people/$id/block'
+        : '/api/admin/people/$id/unblock';
+    final body = await _api.post(path);
+    return _user(body);
+  }
+
   Future<List<AppUser>> adminPeople(String role) async {
     final body = await _api.get('/api/admin/people?role=$role');
     final data = body['data'];
@@ -92,5 +134,16 @@ class TaskRepository {
       );
     }
     return RunnerTask.fromJson(Map<String, dynamic>.from(data));
+  }
+
+  AppUser _user(Map<String, dynamic> body) {
+    final data = body['data'];
+    if (data is! Map) {
+      throw const ApiException(
+        code: 'INVALID_RESPONSE',
+        message: 'The server returned an unexpected response',
+      );
+    }
+    return AppUser.fromJson(Map<String, dynamic>.from(data));
   }
 }

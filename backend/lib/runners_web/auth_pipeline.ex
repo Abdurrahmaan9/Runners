@@ -9,4 +9,5 @@ defmodule RunnersWeb.AuthPipeline do
   plug Guardian.Plug.VerifyHeader, scheme: "Bearer"
   plug Guardian.Plug.EnsureAuthenticated
   plug Guardian.Plug.LoadResource, allow_blank: false
+  plug RunnersWeb.RejectBlockedUser
 end

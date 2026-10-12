@@ -6,6 +6,7 @@ import 'package:runners_app/api/api_exception.dart';
 import 'package:runners_app/auth/auth.dart';
 import 'package:runners_app/home/view/admin_charts.dart';
 import 'package:runners_app/home/view/admin_list_page.dart';
+import 'package:runners_app/home/view/admin_person_page.dart';
 import 'package:runners_app/home/view/settings_page.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/models/admin_stats.dart';
@@ -361,6 +362,22 @@ class _HubTab extends StatelessWidget {
             errands ? l10n.errands : l10n.people,
             style: Theme.of(context).textTheme.headlineMedium,
           ),
+          if (!errands) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const AdminPersonPage(),
+                    ),
+                  );
+                },
+                child: Text(l10n.addUser),
+              ),
+            ),
+          ],
           const SizedBox(height: 8),
           Glass(
             padding: const EdgeInsets.symmetric(horizontal: 16),

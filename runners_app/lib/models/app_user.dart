@@ -39,6 +39,8 @@ class AppUser extends Equatable {
     required this.fullName,
     required this.role,
     required this.isVerified,
+    this.blocked = false,
+    this.insertedAt,
     this.runnerProfile,
   });
 
@@ -50,6 +52,8 @@ class AppUser extends Equatable {
       fullName: json['full_name'] as String,
       role: json['role'] as String,
       isVerified: json['is_verified'] as bool? ?? false,
+      blocked: json['blocked'] as bool? ?? false,
+      insertedAt: json['inserted_at'] as String?,
       runnerProfile: profile is Map
           ? RunnerProfile.fromJson(Map<String, dynamic>.from(profile))
           : null,
@@ -61,6 +65,8 @@ class AppUser extends Equatable {
   final String fullName;
   final String role;
   final bool isVerified;
+  final bool blocked;
+  final String? insertedAt;
   final RunnerProfile? runnerProfile;
 
   bool get isRunner => role == 'runner';
@@ -74,6 +80,8 @@ class AppUser extends Equatable {
     fullName,
     role,
     isVerified,
+    blocked,
+    insertedAt,
     runnerProfile,
   ];
 }

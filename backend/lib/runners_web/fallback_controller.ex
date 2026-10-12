@@ -22,6 +22,10 @@ defmodule RunnersWeb.FallbackController do
     render_error(conn, :not_found, "NOT_FOUND", "Resource does not exist")
   end
 
+  def call(conn, {:error, :blocked}) do
+    render_error(conn, :forbidden, "FORBIDDEN", "This account is blocked")
+  end
+
   def call(conn, {:error, :invalid_credentials}) do
     render_error(conn, :unauthorized, "UNAUTHORIZED", "Phone number or password is incorrect")
   end

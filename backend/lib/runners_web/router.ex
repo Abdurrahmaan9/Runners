@@ -25,6 +25,11 @@ defmodule RunnersWeb.Router do
     get "/admin/heatmap", AdminController, :heatmap
     get "/admin/errands", AdminController, :errands
     get "/admin/people", AdminController, :people
+    post "/admin/people", AdminController, :create_person
+    get "/admin/people/:id", AdminController, :show_person
+    patch "/admin/people/:id", AdminController, :update_person
+    post "/admin/people/:id/block", AdminController, :block_person
+    post "/admin/people/:id/unblock", AdminController, :unblock_person
 
     patch "/runners/me/status", RunnerController, :update_status
     post "/runners/me/location", RunnerController, :update_location

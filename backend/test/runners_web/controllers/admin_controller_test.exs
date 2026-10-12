@@ -74,6 +74,72 @@ defmodule RunnersWeb.AdminControllerTest do
            } = json_response(conn, 200)
   end
 
+  test "an admin can add, update, view, and block a person", %{conn: conn} do
+    admin = register_user!(%{role: "admin"})
+
+    conn =
+      conn
+      |> login(admin)
+      |> post(~p"/api/admin/people", %{
+        "phone_number" => "971555010",
+        "password" => "password123",
+        "full_name" => "New Runner",
+        "role" => "runner"
+      })
+
+    assert %{
+             "data" => %{
+               "id" => id,
+               "full_name" => "New Runner",
+               "role" => "runner",
+               "blocked" => false,
+               "runner_profile" => %{"is_online" => false}
+             }
+           } = json_response(conn, 201)
+
+    conn =
+      build_conn()
+      |> login(admin)
+      |> patch(~p"/api/admin/people/#{id}", %{
+        "full_name" => "Updated Runner",
+        "phone_number" => "971555010",
+        "role" => "runner",
+        "password" => ""
+      })
+
+    assert %{"data" => %{"full_name" => "Updated Runner"}} = json_response(conn, 200)
+
+    conn = build_conn() |> login(admin) |> post(~p"/api/admin/people/#{id}/block")
+    assert %{"data" => %{"blocked" => true}} = json_response(conn, 200)
+
+    assert Accounts.authenticate_by_phone_and_password("971555010", "password123") ==
+             {:error, :blocked}
+
+    conn = build_conn() |> login(admin) |> get(~p"/api/admin/people/#{id}")
+
+    assert %{"data" => %{"phone_number" => "+260971555010", "blocked" => true}} =
+             json_response(conn, 200)
+
+    conn = build_conn() |> login(admin) |> post(~p"/api/admin/people/#{id}/unblock")
+    assert %{"data" => %{"blocked" => false}} = json_response(conn, 200)
+  end
+
+  test "a requester cannot add people", %{conn: conn} do
+    requester = register_user!(%{role: "requester"})
+
+    conn =
+      conn
+      |> login(requester)
+      |> post(~p"/api/admin/people", %{
+        "phone_number" => "971555011",
+        "password" => "password123",
+        "full_name" => "Nope",
+        "role" => "requester"
+      })
+
+    assert json_response(conn, 403)["error"]["code"] == "FORBIDDEN"
+  end
+
   test "a requester cannot read admin stats", %{conn: conn} do
     requester = register_user!(%{role: "requester"})
 
