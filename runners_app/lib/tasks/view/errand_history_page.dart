@@ -135,22 +135,22 @@ class _Section extends StatelessWidget {
       children: [
         Text(
           title.toUpperCase(),
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             letterSpacing: 0.6,
             fontWeight: FontWeight.w700,
-            color: AppTheme.muted,
+            color: context.colors.muted,
           ),
         ),
         const SizedBox(height: 10),
         if (tasks.isEmpty)
-          Text(empty, style: const TextStyle(color: AppTheme.muted))
+          Text(empty, style: TextStyle(color: context.colors.muted))
         else
           for (final task in tasks)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Material(
-                color: AppTheme.field,
+                color: context.colors.field,
                 borderRadius: BorderRadius.circular(16),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
@@ -165,16 +165,16 @@ class _Section extends StatelessWidget {
                             children: [
                               Text(
                                 task.title,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w800,
-                                  color: AppTheme.ink,
+                                  color: context.colors.ink,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 '${taskTypeLabel(l10n, task.taskType)} · '
                                 '${task.dropoffAddress}',
-                                style: const TextStyle(color: AppTheme.muted),
+                                style: TextStyle(color: context.colors.muted),
                               ),
                             ],
                           ),

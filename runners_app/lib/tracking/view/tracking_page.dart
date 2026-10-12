@@ -73,10 +73,10 @@ class _TrackingView extends StatelessWidget {
                     children: [
                       IconButton.filled(
                         style: IconButton.styleFrom(
-                          backgroundColor: AppTheme.white,
+                          backgroundColor: context.colors.surface,
                         ),
                         onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.arrow_back, color: AppTheme.ink),
+                        icon: Icon(Icons.arrow_back, color: context.colors.ink),
                       ),
                       const SizedBox(width: 8),
                       MapChip(
@@ -104,7 +104,7 @@ class _TrackingView extends StatelessWidget {
                                 ? l10n.trackingWaiting
                                 : '${runner.lat.toStringAsFixed(5)}, '
                                       '${runner.lng.toStringAsFixed(5)}'),
-                        style: const TextStyle(color: AppTheme.muted),
+                        style: TextStyle(color: context.colors.muted),
                       ),
                       const SizedBox(height: 14),
                       Text(

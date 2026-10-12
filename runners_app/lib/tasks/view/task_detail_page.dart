@@ -71,10 +71,10 @@ class _TaskDetailView extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 8),
                     child: IconButton.filled(
                       style: IconButton.styleFrom(
-                        backgroundColor: AppTheme.white,
+                        backgroundColor: context.colors.surface,
                       ),
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.arrow_back, color: AppTheme.ink),
+                      icon: Icon(Icons.arrow_back, color: context.colors.ink),
                     ),
                   ),
                 ),
@@ -92,7 +92,7 @@ class _TaskDetailView extends StatelessWidget {
                           height: 4,
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
-                            color: AppTheme.line,
+                            color: context.colors.line,
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
@@ -105,7 +105,7 @@ class _TaskDetailView extends StatelessWidget {
                         const SizedBox(height: 6),
                         Text(
                           l10n.findingBody,
-                          style: const TextStyle(color: AppTheme.muted),
+                          style: TextStyle(color: context.colors.muted),
                         ),
                         const SizedBox(height: 14),
                         const LinearProgressIndicator(color: AppTheme.teal),
@@ -130,7 +130,7 @@ class _TaskDetailView extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text(
                           task.description,
-                          style: const TextStyle(color: AppTheme.muted),
+                          style: TextStyle(color: context.colors.muted),
                         ),
                         if (isAssigned) ...[
                           const SizedBox(height: 14),
@@ -260,7 +260,7 @@ class _Steps extends StatelessWidget {
                   width: 14,
                   height: 14,
                   decoration: BoxDecoration(
-                    color: i <= current ? AppTheme.copper : AppTheme.line,
+                    color: i <= current ? AppTheme.copper : context.colors.line,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -271,7 +271,9 @@ class _Steps extends StatelessWidget {
                     fontWeight: i == current
                         ? FontWeight.w800
                         : FontWeight.w500,
-                    color: i <= current ? AppTheme.ink : AppTheme.muted,
+                    color: i <= current
+                        ? context.colors.ink
+                        : context.colors.muted,
                   ),
                 ),
               ],

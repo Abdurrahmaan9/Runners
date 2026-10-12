@@ -40,7 +40,7 @@ class _AdminHomeState extends State<AdminHome> {
         ],
       ),
       bottomNavigationBar: NavigationBar(
-        backgroundColor: AppTheme.white,
+        backgroundColor: context.colors.surface,
         indicatorColor: AppTheme.teal.withValues(alpha: 0.15),
         selectedIndex: _tab,
         onDestinationSelected: (index) => setState(() => _tab = index),
@@ -211,22 +211,24 @@ class _StatCard extends StatelessWidget {
     required this.value,
     required this.onTap,
     this.detail,
-    this.background = AppTheme.field,
-    this.foreground = AppTheme.ink,
+    this.background,
+    this.foreground,
   });
 
   final String label;
   final String value;
   final String? detail;
-  final Color background;
-  final Color foreground;
+  final Color? background;
+  final Color? foreground;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final background = this.background ?? context.colors.field;
+    final foreground = this.foreground ?? context.colors.ink;
     final muted = foreground == AppTheme.white
         ? const Color(0xFFE7F3F1)
-        : AppTheme.muted;
+        : context.colors.muted;
     return Material(
       color: background,
       borderRadius: BorderRadius.circular(20),
@@ -318,12 +320,12 @@ class _HubTab extends StatelessWidget {
               contentPadding: EdgeInsets.zero,
               title: Text(
                 item.$1,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.ink,
+                  color: context.colors.ink,
                 ),
               ),
-              trailing: const Icon(Icons.chevron_right, color: AppTheme.muted),
+              trailing: Icon(Icons.chevron_right, color: context.colors.muted),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -332,7 +334,7 @@ class _HubTab extends StatelessWidget {
                 );
               },
             ),
-            const Divider(height: 1, color: AppTheme.line),
+            Divider(height: 1, color: context.colors.line),
           ],
         ],
       ),

@@ -164,9 +164,11 @@ class _RequesterHome extends StatelessWidget {
             top: 48,
             right: 16,
             child: IconButton.filled(
-              style: IconButton.styleFrom(backgroundColor: AppTheme.white),
+              style: IconButton.styleFrom(
+                backgroundColor: context.colors.surface,
+              ),
               onPressed: onSettings,
-              icon: const Icon(Icons.person, color: AppTheme.ink),
+              icon: Icon(Icons.person, color: context.colors.ink),
             ),
           ),
           Align(
@@ -187,7 +189,7 @@ class _RequesterHome extends StatelessWidget {
                           height: 4,
                           margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
-                            color: AppTheme.line,
+                            color: context.colors.line,
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
@@ -239,7 +241,7 @@ class _RequesterHome extends StatelessWidget {
                                   horizontal: 4,
                                 ),
                                 child: Material(
-                                  color: AppTheme.field,
+                                  color: context.colors.field,
                                   borderRadius: BorderRadius.circular(16),
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(16),
@@ -263,10 +265,10 @@ class _RequesterHome extends StatelessWidget {
                                           Text(
                                             taskTypeLabel(l10n, type),
                                             textAlign: TextAlign.center,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w700,
-                                              color: AppTheme.ink,
+                                              color: context.colors.ink,
                                             ),
                                           ),
                                         ],
@@ -467,9 +469,11 @@ class _RunnerHomeState extends State<_RunnerHome> {
             top: 48,
             right: 16,
             child: IconButton.filled(
-              style: IconButton.styleFrom(backgroundColor: AppTheme.white),
+              style: IconButton.styleFrom(
+                backgroundColor: context.colors.surface,
+              ),
               onPressed: widget.onSettings,
-              icon: const Icon(Icons.person, color: AppTheme.ink),
+              icon: Icon(Icons.person, color: context.colors.ink),
             ),
           ),
           Align(

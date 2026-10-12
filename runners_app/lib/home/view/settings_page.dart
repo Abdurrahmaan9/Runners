@@ -9,6 +9,7 @@ import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/models/app_user.dart';
 import 'package:runners_app/tasks/view/errand_history_page.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/theme_cubit.dart';
 
 class SettingsPage extends StatelessWidget {
   const new({super.key});
@@ -44,7 +45,7 @@ class SettingsPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.mist,
+              color: context.colors.mist,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -57,15 +58,15 @@ class SettingsPage extends StatelessWidget {
                     children: [
                       Text(
                         user.fullName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 18,
-                          color: AppTheme.ink,
+                          color: context.colors.ink,
                         ),
                       ),
                       Text(
                         user.phoneNumber,
-                        style: const TextStyle(color: AppTheme.muted),
+                        style: TextStyle(color: context.colors.muted),
                       ),
                       const SizedBox(height: 6),
                       Container(
@@ -103,7 +104,7 @@ class SettingsPage extends StatelessWidget {
               );
             },
           ),
-          const Divider(height: 1, color: AppTheme.line),
+          Divider(height: 1, color: context.colors.line),
           _SettingsLink(
             label: l10n.support,
             onTap: () {
@@ -112,7 +113,7 @@ class SettingsPage extends StatelessWidget {
               );
             },
           ),
-          const Divider(height: 1, color: AppTheme.line),
+          Divider(height: 1, color: context.colors.line),
           _SettingsLink(
             label: l10n.aboutUs,
             onTap: () {
@@ -121,7 +122,23 @@ class SettingsPage extends StatelessWidget {
               );
             },
           ),
-          const Divider(height: 1, color: AppTheme.line),
+          Divider(height: 1, color: context.colors.line),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              l10n.darkMode,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: context.colors.ink,
+              ),
+            ),
+            value: context.watch<ThemeCubit>().state == ThemeMode.dark,
+            activeThumbColor: AppTheme.teal,
+            onChanged: (enabled) {
+              unawaited(context.read<ThemeCubit>().setDark(enabled: enabled));
+            },
+          ),
+          Divider(height: 1, color: context.colors.line),
           ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(
@@ -156,12 +173,12 @@ class _SettingsLink extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       title: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontWeight: FontWeight.w700,
-          color: AppTheme.ink,
+          color: context.colors.ink,
         ),
       ),
-      trailing: const Icon(Icons.chevron_right, color: AppTheme.muted),
+      trailing: Icon(Icons.chevron_right, color: context.colors.muted),
       onTap: onTap,
     );
   }

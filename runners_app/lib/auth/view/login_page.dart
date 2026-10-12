@@ -65,9 +65,9 @@ class _LoginPageState extends State<LoginPage> {
               TextField(
                 controller: _password,
                 obscureText: _obscure,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.ink,
+                  color: context.colors.ink,
                 ),
                 decoration: InputDecoration(
                   suffixIcon: TextButton(
@@ -120,15 +120,15 @@ class _BackDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppTheme.mist,
+      color: context.colors.mist,
       shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
         onTap: onPressed,
-        child: const SizedBox(
+        child: SizedBox(
           width: 42,
           height: 42,
-          child: Icon(Icons.arrow_back, color: AppTheme.ink),
+          child: Icon(Icons.arrow_back, color: context.colors.ink),
         ),
       ),
     );

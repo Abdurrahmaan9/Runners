@@ -1,8 +1,12 @@
+import 'dart:async';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/auth/view/login_page.dart';
 import 'package:runners_app/auth/view/register_page.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/theme/app_theme.dart';
+import 'package:runners_app/theme/theme_cubit.dart';
 
 class WelcomePage extends StatefulWidget {
   const new({super.key});
@@ -119,13 +123,32 @@ class _Hero extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                l10n.appTitle,
-                style: const TextStyle(
-                  color: AppTheme.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                ),
+              Row(
+                children: [
+                  Text(
+                    l10n.appTitle,
+                    style: const TextStyle(
+                      color: AppTheme.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () {
+                      final cubit = context.read<ThemeCubit>();
+                      unawaited(
+                        cubit.setDark(enabled: cubit.state != ThemeMode.dark),
+                      );
+                    },
+                    icon: Icon(
+                      context.watch<ThemeCubit>().state == ThemeMode.dark
+                          ? Icons.light_mode
+                          : Icons.dark_mode,
+                      color: AppTheme.white,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 36),
               Text(
@@ -151,11 +174,7 @@ class _Hero extends StatelessWidget {
 }
 
 class _Feature extends StatelessWidget {
-  const new({
-    required this.color,
-    required this.title,
-    required this.body,
-  });
+  const new({required this.color, required this.title, required this.body});
 
   final Color color;
   final String title;
@@ -182,13 +201,13 @@ class _Feature extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 16,
-                    color: AppTheme.ink,
+                    color: context.colors.ink,
                   ),
                 ),
-                Text(body, style: const TextStyle(color: AppTheme.muted)),
+                Text(body, style: TextStyle(color: context.colors.muted)),
               ],
             ),
           ),

@@ -86,15 +86,15 @@ class PhoneNumberField extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: AppTheme.field,
+            color: context.colors.field,
             borderRadius: BorderRadius.circular(16),
           ),
-          child: const Text(
+          child: Text(
             '+260',
             style: TextStyle(
               fontWeight: FontWeight.w800,
               fontSize: 16,
-              color: AppTheme.ink,
+              color: context.colors.ink,
             ),
           ),
         ),
@@ -103,10 +103,10 @@ class PhoneNumberField extends StatelessWidget {
           child: TextField(
             controller: controller,
             keyboardType: TextInputType.phone,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: 16,
-              color: AppTheme.ink,
+              color: context.colors.ink,
             ),
             decoration: InputDecoration(
               hintText: '97 123 4567',
@@ -133,11 +133,11 @@ class FieldCaption extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
           letterSpacing: 0.6,
           fontWeight: FontWeight.w700,
-          color: AppTheme.muted,
+          color: context.colors.muted,
         ),
       ),
     );
@@ -154,10 +154,10 @@ class SheetCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
-      decoration: const BoxDecoration(
-        color: AppTheme.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        boxShadow: [
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        boxShadow: const [
           BoxShadow(
             color: Color(0x14000000),
             blurRadius: 24,
@@ -179,7 +179,7 @@ class MapChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppTheme.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: const [
           BoxShadow(
@@ -193,9 +193,9 @@ class MapChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         child: Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w700,
-            color: AppTheme.ink,
+            color: context.colors.ink,
           ),
         ),
       ),

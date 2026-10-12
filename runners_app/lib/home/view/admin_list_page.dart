@@ -133,7 +133,7 @@ class _AdminListPageState extends State<AdminListPage> {
                 ] else if (empty)
                   Text(
                     l10n.emptyAdminList,
-                    style: const TextStyle(color: AppTheme.muted),
+                    style: TextStyle(color: context.colors.muted),
                   )
                 else if (_peopleList)
                   for (final person in _people) _PersonRow(person: person)
@@ -161,7 +161,7 @@ class _PersonRow extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppTheme.field,
+          color: context.colors.field,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -172,15 +172,15 @@ class _PersonRow extends StatelessWidget {
                 children: [
                   Text(
                     person.fullName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w800,
-                      color: AppTheme.ink,
+                      color: context.colors.ink,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     person.phoneNumber,
-                    style: const TextStyle(color: AppTheme.muted),
+                    style: TextStyle(color: context.colors.muted),
                   ),
                 ],
               ),
@@ -212,7 +212,7 @@ class _ErrandRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: AppTheme.field,
+        color: context.colors.field,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -227,16 +227,16 @@ class _ErrandRow extends StatelessWidget {
                     children: [
                       Text(
                         task.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w800,
-                          color: AppTheme.ink,
+                          color: context.colors.ink,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '${taskTypeLabel(l10n, task.taskType)} · '
                         '${task.dropoffAddress}',
-                        style: const TextStyle(color: AppTheme.muted),
+                        style: TextStyle(color: context.colors.muted),
                       ),
                     ],
                   ),

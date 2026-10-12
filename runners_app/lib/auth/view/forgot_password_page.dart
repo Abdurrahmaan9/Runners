@@ -33,15 +33,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Material(
-                color: AppTheme.mist,
+                color: context.colors.mist,
                 shape: const CircleBorder(),
                 child: InkWell(
                   customBorder: const CircleBorder(),
                   onTap: widget.onBack,
-                  child: const SizedBox(
+                  child: SizedBox(
                     width: 42,
                     height: 42,
-                    child: Icon(Icons.arrow_back, color: AppTheme.ink),
+                    child: Icon(Icons.arrow_back, color: context.colors.ink),
                   ),
                 ),
               ),

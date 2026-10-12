@@ -44,8 +44,8 @@ class AboutPage extends StatelessWidget {
           const SizedBox(height: 20),
           Text(
             l10n.aboutBody,
-            style: const TextStyle(
-              color: AppTheme.ink,
+            style: TextStyle(
+              color: context.colors.ink,
               fontSize: 16,
               height: 1.4,
             ),
@@ -53,8 +53,8 @@ class AboutPage extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             l10n.aboutHow,
-            style: const TextStyle(
-              color: AppTheme.muted,
+            style: TextStyle(
+              color: context.colors.muted,
               fontSize: 16,
               height: 1.4,
             ),

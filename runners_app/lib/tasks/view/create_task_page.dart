@@ -168,7 +168,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            border: Border.all(color: AppTheme.line),
+            border: Border.all(color: context.colors.line),
             borderRadius: BorderRadius.circular(18),
           ),
           child: Column(
@@ -179,10 +179,10 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                   Expanded(
                     child: Text(
                       _title.text,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
-                        color: AppTheme.ink,
+                        color: context.colors.ink,
                       ),
                     ),
                   ),
@@ -208,7 +208,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
               const SizedBox(height: 8),
               Text(
                 _description.text,
-                style: const TextStyle(color: AppTheme.muted),
+                style: TextStyle(color: context.colors.muted),
               ),
             ],
           ),
@@ -230,7 +230,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
           children: [
             Text(
               l10n.estimatedCost,
-              style: const TextStyle(color: AppTheme.muted),
+              style: TextStyle(color: context.colors.muted),
             ),
             const Spacer(),
             Text(
@@ -245,12 +245,12 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppTheme.line),
+            border: Border.all(color: context.colors.line),
           ),
           child: Text(
             l10n.paymentLater,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppTheme.muted),
+            style: TextStyle(color: context.colors.muted),
           ),
         ),
       ],
@@ -368,7 +368,7 @@ class _Place extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.field,
+        color: context.colors.field,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -385,18 +385,18 @@ class _Place extends StatelessWidget {
               children: [
                 Text(
                   label.toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     letterSpacing: 0.5,
-                    color: AppTheme.muted,
+                    color: context.colors.muted,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    color: AppTheme.ink,
+                    color: context.colors.ink,
                   ),
                 ),
               ],

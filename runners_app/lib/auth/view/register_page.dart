@@ -6,11 +6,7 @@ import 'package:runners_app/theme/app_theme.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
 
 class RegisterPage extends StatefulWidget {
-  const new({
-    required this.onCancel,
-    required this.onLogin,
-    super.key,
-  });
+  const new({required this.onCancel, required this.onLogin, super.key});
 
   final VoidCallback onCancel;
   final VoidCallback onLogin;
@@ -224,9 +220,9 @@ class _RegisterPageState extends State<RegisterPage> {
           controller: _name,
           textCapitalization: TextCapitalization.words,
           onChanged: (_) => setState(() {}),
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: AppTheme.ink,
+            color: context.colors.ink,
           ),
         ),
         const SizedBox(height: 16),
@@ -253,15 +249,15 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Widget _dot({required VoidCallback onTap}) {
     return Material(
-      color: AppTheme.mist,
+      color: context.colors.mist,
       shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
         onTap: onTap,
-        child: const SizedBox(
+        child: SizedBox(
           width: 42,
           height: 42,
-          child: Icon(Icons.arrow_back, color: AppTheme.ink),
+          child: Icon(Icons.arrow_back, color: context.colors.ink),
         ),
       ),
     );
@@ -286,7 +282,7 @@ class _RoleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppTheme.field,
+      color: context.colors.field,
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -317,12 +313,12 @@ class _RoleCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w800,
-                        color: AppTheme.ink,
+                        color: context.colors.ink,
                       ),
                     ),
-                    Text(body, style: const TextStyle(color: AppTheme.muted)),
+                    Text(body, style: TextStyle(color: context.colors.muted)),
                   ],
                 ),
               ),
@@ -349,10 +345,10 @@ class _Rule extends StatelessWidget {
           Icon(
             Icons.circle,
             size: 10,
-            color: met ? AppTheme.teal : AppTheme.line,
+            color: met ? AppTheme.teal : context.colors.line,
           ),
           const SizedBox(width: 8),
-          Text(label, style: const TextStyle(color: AppTheme.ink)),
+          Text(label, style: TextStyle(color: context.colors.ink)),
         ],
       ),
     );

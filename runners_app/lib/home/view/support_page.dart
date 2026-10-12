@@ -15,7 +15,7 @@ class SupportPage extends StatelessWidget {
         children: [
           Text(
             l10n.supportLead,
-            style: const TextStyle(color: AppTheme.muted, fontSize: 16),
+            style: TextStyle(color: context.colors.muted, fontSize: 16),
           ),
           const SizedBox(height: 20),
           _Topic(title: l10n.supportPostTitle, body: l10n.supportPostBody),
@@ -42,7 +42,7 @@ class _Topic extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppTheme.field,
+          color: context.colors.field,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -50,16 +50,16 @@ class _Topic extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 16,
-                color: AppTheme.ink,
+                color: context.colors.ink,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               body,
-              style: const TextStyle(color: AppTheme.muted, height: 1.35),
+              style: TextStyle(color: context.colors.muted, height: 1.35),
             ),
           ],
         ),
