@@ -8,10 +8,9 @@ import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/models/app_user.dart';
 import 'package:runners_app/models/runner_task.dart';
 import 'package:runners_app/tasks/data/task_repository.dart';
+import 'package:runners_app/tasks/view/errand_card.dart';
 import 'package:runners_app/tasks/view/task_detail_page.dart';
-import 'package:runners_app/tasks/view/task_labels.dart';
 import 'package:runners_app/theme/app_theme.dart';
-import 'package:runners_app/theme/glass.dart';
 
 class ErrandHistoryPage extends StatefulWidget {
   const new({super.key});
@@ -130,7 +129,6 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -150,42 +148,9 @@ class _Section extends StatelessWidget {
           for (final task in tasks)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: Glass(
-                borderRadius: BorderRadius.circular(16),
-                padding: const EdgeInsets.all(14),
+              child: ErrandCard(
+                task: task,
                 onTap: () => unawaited(onOpen(task)),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            task.title,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w800,
-                              color: context.colors.ink,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${taskTypeLabel(l10n, task.taskType)} · '
-                            '${task.dropoffAddress}',
-                            style: TextStyle(color: context.colors.muted),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      taskStatusLabel(l10n, task.status),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.teal,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
       ],

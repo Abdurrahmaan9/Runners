@@ -161,15 +161,17 @@ class SheetCard extends StatelessWidget {
 }
 
 class MapChip extends StatelessWidget {
-  const new(this.label, {super.key});
+  const new(this.label, {super.key, this.onTap});
 
   final String label;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Glass(
       borderRadius: BorderRadius.circular(20),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      onTap: onTap,
       child: Text(
         label,
         style: TextStyle(
