@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/api/api_exception.dart';
 import 'package:runners_app/auth/auth.dart';
+import 'package:runners_app/home/view/admin_audit_page.dart';
 import 'package:runners_app/home/view/admin_charts.dart';
 import 'package:runners_app/home/view/admin_list_page.dart';
 import 'package:runners_app/home/view/admin_person_page.dart';
@@ -41,6 +42,7 @@ class _AdminHomeState extends State<AdminHome> {
           _DashboardTab(),
           _HubTab(section: _AdminSection.errands),
           _HubTab(section: _AdminSection.people),
+          AdminAuditPage(),
           SettingsPage(),
         ],
       ),
@@ -68,6 +70,11 @@ class _AdminHomeState extends State<AdminHome> {
               icon: const Icon(Icons.groups_outlined),
               selectedIcon: const Icon(Icons.groups),
               label: l10n.people,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.fact_check_outlined),
+              selectedIcon: const Icon(Icons.fact_check),
+              label: l10n.audit,
             ),
             NavigationDestination(
               icon: const Icon(Icons.settings_outlined),

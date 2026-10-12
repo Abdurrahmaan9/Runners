@@ -2,6 +2,7 @@ import 'package:runners_app/api/api_client.dart';
 import 'package:runners_app/api/api_exception.dart';
 import 'package:runners_app/models/admin_stats.dart';
 import 'package:runners_app/models/app_user.dart';
+import 'package:runners_app/models/audit_event.dart';
 import 'package:runners_app/models/create_task_draft.dart';
 import 'package:runners_app/models/heatmap.dart';
 import 'package:runners_app/models/runner_task.dart';
@@ -80,6 +81,16 @@ class TaskRepository {
         : '/api/admin/people/$id/unblock';
     final body = await _api.post(path);
     return _user(body);
+  }
+
+  Future<List<AuditEvent>> adminAudit() async {
+    final body = await _api.get('/api/admin/audit');
+    final data = body['data'];
+    if (data is! List) return const [];
+    return [
+      for (final item in data)
+        if (item is Map) AuditEvent.fromJson(Map<String, dynamic>.from(item)),
+    ];
   }
 
   Future<List<AppUser>> adminPeople(String role) async {

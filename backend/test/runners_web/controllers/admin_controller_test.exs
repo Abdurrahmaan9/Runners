@@ -140,6 +140,39 @@ defmodule RunnersWeb.AdminControllerTest do
     assert json_response(conn, 403)["error"]["code"] == "FORBIDDEN"
   end
 
+  test "an admin reads the audit trail", %{conn: conn} do
+    admin = register_user!(%{role: "admin", full_name: "Platform Admin"})
+    requester = register_user!(%{role: "requester", full_name: "Amina"})
+    create_task!(requester)
+
+    login_conn =
+      post(conn, ~p"/api/auth/login", %{
+        "phone_number" => admin.phone_number,
+        "password" => "password123"
+      })
+
+    token = json_response(login_conn, 200)["data"]["token"]
+
+    conn =
+      build_conn()
+      |> put_req_header("authorization", "Bearer " <> token)
+      |> get(~p"/api/admin/audit")
+
+    actions = Enum.map(json_response(conn, 200)["data"], & &1["action"])
+
+    assert "user.registered" in actions
+    assert "task.posted" in actions
+    assert "user.logged_in" in actions
+  end
+
+  test "a requester cannot read the audit trail", %{conn: conn} do
+    requester = register_user!(%{role: "requester"})
+
+    conn = conn |> login(requester) |> get(~p"/api/admin/audit")
+
+    assert json_response(conn, 403)["error"]["code"] == "FORBIDDEN"
+  end
+
   test "a requester cannot read admin stats", %{conn: conn} do
     requester = register_user!(%{role: "requester"})
 

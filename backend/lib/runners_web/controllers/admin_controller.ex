@@ -27,6 +27,14 @@ defmodule RunnersWeb.AdminController do
     end
   end
 
+  def audit(conn, _params) do
+    with {:ok, events} <- Runners.Audit.list(current_user(conn)) do
+      conn
+      |> put_view(json: RunnersWeb.AuditJSON)
+      |> render(:index, events: events)
+    end
+  end
+
   def people(conn, params) do
     with {:ok, users} <- Admin.list_people(current_user(conn), params["role"]) do
       conn

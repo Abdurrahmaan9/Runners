@@ -156,5 +156,114 @@
     "statusRunnerArrived": "Runner arrived",
     "statusInProgress": "In progress",
     "statusCompleted": "Completed",
-    "statusCancelled": "Cancelled"
+    "statusCancelled": "Cancelled",
+    "audit": "Audit",
+    "auditEmpty": "No activity yet.",
+    "auditRegistered": "{name} created an account",
+    "@auditRegistered": {
+        "placeholders": {
+            "name": {"type": "String"}
+        }
+    },
+    "auditLoggedIn": "{name} signed in",
+    "@auditLoggedIn": {
+        "placeholders": {
+            "name": {"type": "String"}
+        }
+    },
+    "auditLoginFailed": "Failed sign-in for {phone}",
+    "@auditLoginFailed": {
+        "placeholders": {
+            "phone": {"type": "String"}
+        }
+    },
+    "auditLoginBlocked": "{name} tried to sign in while blocked",
+    "@auditLoginBlocked": {
+        "placeholders": {
+            "name": {"type": "String"}
+        }
+    },
+    "auditPersonCreated": "{actor} added {name}",
+    "@auditPersonCreated": {
+        "placeholders": {
+            "actor": {"type": "String"},
+            "name": {"type": "String"}
+        }
+    },
+    "auditPersonUpdated": "{actor} updated {name}",
+    "@auditPersonUpdated": {
+        "placeholders": {
+            "actor": {"type": "String"},
+            "name": {"type": "String"}
+        }
+    },
+    "auditPersonBlocked": "{actor} blocked {name}",
+    "@auditPersonBlocked": {
+        "placeholders": {
+            "actor": {"type": "String"},
+            "name": {"type": "String"}
+        }
+    },
+    "auditPersonUnblocked": "{actor} unblocked {name}",
+    "@auditPersonUnblocked": {
+        "placeholders": {
+            "actor": {"type": "String"},
+            "name": {"type": "String"}
+        }
+    },
+    "auditTaskPosted": "{name} posted {title}",
+    "@auditTaskPosted": {
+        "placeholders": {
+            "name": {"type": "String"},
+            "title": {"type": "String"}
+        }
+    },
+    "auditTaskUpdated": "{name} updated {title}",
+    "@auditTaskUpdated": {
+        "placeholders": {
+            "name": {"type": "String"},
+            "title": {"type": "String"}
+        }
+    },
+    "auditTaskDeleted": "{name} deleted {title}",
+    "@auditTaskDeleted": {
+        "placeholders": {
+            "name": {"type": "String"},
+            "title": {"type": "String"}
+        }
+    },
+    "auditTaskAccepted": "{name} accepted {title}",
+    "@auditTaskAccepted": {
+        "placeholders": {
+            "name": {"type": "String"},
+            "title": {"type": "String"}
+        }
+    },
+    "auditTaskAdvanced": "{name} moved {title} to {status}",
+    "@auditTaskAdvanced": {
+        "placeholders": {
+            "name": {"type": "String"},
+            "title": {"type": "String"},
+            "status": {"type": "String"}
+        }
+    },
+    "auditTaskCancelled": "{name} cancelled {title}",
+    "@auditTaskCancelled": {
+        "placeholders": {
+            "name": {"type": "String"},
+            "title": {"type": "String"}
+        }
+    },
+    "auditRunnerOnline": "{name} went online",
+    "@auditRunnerOnline": {
+        "placeholders": {
+            "name": {"type": "String"}
+        }
+    },
+    "auditRunnerOffline": "{name} went offline",
+    "@auditRunnerOffline": {
+        "placeholders": {
+            "name": {"type": "String"}
+        }
+    }
 }

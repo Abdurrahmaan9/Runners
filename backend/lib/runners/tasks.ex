@@ -6,6 +6,7 @@ defmodule Runners.Tasks do
   import Ecto.Query, warn: false
 
   alias Runners.Accounts.User
+  alias Runners.Audit
   alias Runners.Geospatial.Point
   alias Runners.Repo
   alias Runners.Tasks.Status
@@ -37,6 +38,7 @@ defmodule Runners.Tasks do
       |> Ecto.Changeset.put_change(:status, :posted)
       |> Repo.insert()
       |> preload_parties()
+      |> note_task(requester, "task.posted", %{})
     end
   end
 
@@ -54,6 +56,7 @@ defmodule Runners.Tasks do
           |> Task.changeset(attrs)
           |> Repo.update()
           |> preload_parties()
+          |> note_task(user, "task.updated", %{})
         end
     end
   end
@@ -68,8 +71,12 @@ defmodule Runners.Tasks do
 
       true ->
         case Repo.delete(task) do
-          {:ok, _task} -> :ok
-          {:error, changeset} -> {:error, changeset}
+          {:ok, _task} ->
+            note_task({:ok, task}, user, "task.deleted", %{})
+            :ok
+
+          {:error, changeset} ->
+            {:error, changeset}
         end
     end
   end
@@ -89,7 +96,9 @@ defmodule Runners.Tasks do
 
       case Repo.update_all(query, set: [status: :assigned, runner_id: runner.id, updated_at: now]) do
         {1, _} ->
-          fetch_task(uuid)
+          with {:ok, task} <- fetch_task(uuid) do
+            note_task({:ok, task}, runner, "task.accepted", %{})
+          end
 
         {0, _} ->
           accept_failure(uuid)
@@ -110,6 +119,7 @@ defmodule Runners.Tasks do
       |> Ecto.Changeset.change(status: new_status)
       |> Repo.update()
       |> preload_parties()
+      |> note_task(user, "task.advanced", %{"status" => Atom.to_string(new_status)})
     end
   end
 
@@ -126,6 +136,7 @@ defmodule Runners.Tasks do
         |> Ecto.Changeset.change(status: :cancelled)
         |> Repo.update()
         |> preload_parties()
+        |> note_task(user, "task.cancelled", %{})
     end
   end
 
@@ -219,4 +230,18 @@ defmodule Runners.Tasks do
 
   defp preload_parties({:ok, task}), do: {:ok, Repo.preload(task, [:requester, :runner])}
   defp preload_parties(other), do: other
+
+  defp note_task({:ok, task}, user, action, metadata) do
+    Audit.record!(
+      user,
+      action,
+      Map.merge(%{"name" => user.full_name, "title" => task.title}, metadata),
+      subject_type: "task",
+      subject_id: task.id
+    )
+
+    {:ok, task}
+  end
+
+  defp note_task(other, _user, _action, _metadata), do: other
 end

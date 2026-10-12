@@ -9,6 +9,7 @@ defmodule Runners.Admin do
 
   alias Runners.Accounts
   alias Runners.Accounts.RunnerProfile
+  alias Runners.Audit
   alias Runners.Accounts.User
   alias Runners.Repo
   alias Runners.Tasks.Task
@@ -83,9 +84,12 @@ defmodule Runners.Admin do
   def list_people(%User{role: :admin}, _role), do: {:error, :invalid_admin_role}
   def list_people(%User{}, _role), do: {:error, :forbidden}
 
-  def create_person(%User{role: :admin}, attrs) when is_map(attrs) do
+  def create_person(%User{role: :admin} = admin, attrs) when is_map(attrs) do
     if person_role(attrs) in @people_roles do
-      Accounts.register_user(attrs)
+      with {:ok, user} <- Accounts.register_user(attrs) do
+        note_person(admin, user, "person.created")
+        {:ok, user}
+      end
     else
       {:error, :invalid_admin_role}
     end
@@ -96,21 +100,40 @@ defmodule Runners.Admin do
   def get_person(%User{role: :admin}, id), do: fetch_person(id)
   def get_person(%User{}, _id), do: {:error, :forbidden}
 
-  def update_person(%User{role: :admin}, id, attrs) do
-    with {:ok, user} <- fetch_person(id) do
-      Accounts.update_user(user, attrs)
+  def update_person(%User{role: :admin} = admin, id, attrs) do
+    with {:ok, user} <- fetch_person(id),
+         {:ok, user} <- Accounts.update_user(user, attrs) do
+      note_person(admin, user, "person.updated")
+      {:ok, user}
     end
   end
 
   def update_person(%User{}, _id, _attrs), do: {:error, :forbidden}
 
-  def set_person_blocked(%User{role: :admin}, id, blocked) when is_boolean(blocked) do
-    with {:ok, user} <- fetch_person(id) do
-      Accounts.set_blocked(user, blocked)
+  def set_person_blocked(%User{role: :admin} = admin, id, blocked) when is_boolean(blocked) do
+    with {:ok, user} <- fetch_person(id),
+         {:ok, user} <- Accounts.set_blocked(user, blocked) do
+      action = if blocked, do: "person.blocked", else: "person.unblocked"
+      note_person(admin, user, action)
+      {:ok, user}
     end
   end
 
   def set_person_blocked(%User{}, _id, _blocked), do: {:error, :forbidden}
+
+  defp note_person(admin, user, action) do
+    Audit.record!(
+      admin,
+      action,
+      %{
+        "actor" => admin.full_name,
+        "name" => user.full_name,
+        "role" => Atom.to_string(user.role)
+      },
+      subject_type: "user",
+      subject_id: user.id
+    )
+  end
 
   defp person_role(attrs) do
     to_string(attrs["role"] || attrs[:role])

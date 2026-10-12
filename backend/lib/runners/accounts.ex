@@ -7,6 +7,7 @@ defmodule Runners.Accounts do
 
   alias Runners.Accounts.RunnerProfile
   alias Runners.Accounts.User
+  alias Runners.Audit
   alias Runners.Repo
 
   @doc """
@@ -27,7 +28,17 @@ defmodule Runners.Accounts do
       case %User{} |> changeset_fun.(attrs) |> Repo.insert() do
         {:ok, user} ->
           maybe_create_runner_profile(user)
-          Repo.preload(user, :runner_profile)
+          user = Repo.preload(user, :runner_profile)
+
+          Audit.record!(
+            user,
+            "user.registered",
+            %{"name" => user.full_name, "role" => Atom.to_string(user.role)},
+            subject_type: "user",
+            subject_id: user.id
+          )
+
+          user
 
         {:error, changeset} ->
           Repo.rollback(changeset)
@@ -46,16 +57,20 @@ defmodule Runners.Accounts do
 
     cond do
       user && user.blocked && Bcrypt.verify_pass(password, user.password_hash) ->
+        note_login(user, "user.login_blocked", normalized)
         {:error, :blocked}
 
       user && Bcrypt.verify_pass(password, user.password_hash) ->
+        note_login(user, "user.logged_in", normalized)
         {:ok, user}
 
       user ->
+        note_login(user, "user.login_failed", normalized)
         {:error, :invalid_credentials}
 
       true ->
         Bcrypt.no_user_verify()
+        note_login(nil, "user.login_failed", normalized)
         {:error, :invalid_credentials}
     end
   end
@@ -122,9 +137,20 @@ defmodule Runners.Accounts do
         {:error, :runner_profile_not_found}
 
       %RunnerProfile{} = profile ->
-        profile
-        |> Ecto.Changeset.change(is_online: is_online)
-        |> Repo.update()
+        case profile |> Ecto.Changeset.change(is_online: is_online) |> Repo.update() do
+          {:ok, _updated} = ok ->
+            action = if is_online, do: "runner.online", else: "runner.offline"
+
+            Audit.record!(user, action, %{"name" => user.full_name},
+              subject_type: "user",
+              subject_id: user.id
+            )
+
+            ok
+
+          error ->
+            error
+        end
     end
   end
 
@@ -165,4 +191,11 @@ defmodule Runners.Accounts do
 
   defp preload_profile(nil), do: nil
   defp preload_profile(user), do: Repo.preload(user, :runner_profile)
+
+  defp note_login(user, action, phone) do
+    metadata = %{"phone" => phone}
+    metadata = if user, do: Map.put(metadata, "name", user.full_name), else: metadata
+
+    Audit.record!(user, action, metadata, subject_type: "user", subject_id: user && user.id)
+  end
 end
