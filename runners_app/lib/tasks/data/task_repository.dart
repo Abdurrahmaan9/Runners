@@ -114,6 +114,11 @@ class TaskRepository {
     return _task(body);
   }
 
+  Future<RunnerTask> update(String id, CreateTaskDraft draft) async {
+    final body = await _api.patch('/api/tasks/$id', draft.toJson());
+    return _task(body);
+  }
+
   Future<RunnerTask> fetch(String id) async {
     final body = await _api.get('/api/tasks/$id');
     return _task(body);

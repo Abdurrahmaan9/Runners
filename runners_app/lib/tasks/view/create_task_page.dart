@@ -6,17 +6,20 @@ import 'package:runners_app/api/api_exception.dart';
 import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/models/create_task_draft.dart';
 import 'package:runners_app/models/geo_point.dart';
+import 'package:runners_app/models/runner_task.dart';
 import 'package:runners_app/runner/data/location_source.dart';
 import 'package:runners_app/tasks/data/task_repository.dart';
+import 'package:runners_app/tasks/view/errand_map.dart';
 import 'package:runners_app/tasks/view/task_labels.dart';
 import 'package:runners_app/theme/app_theme.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
 import 'package:runners_app/theme/glass.dart';
 
 class CreateTaskPage extends StatefulWidget {
-  const new({this.initialType, super.key});
+  const new({this.initialType, this.task, super.key});
 
   final String? initialType;
+  final RunnerTask? task;
 
   @override
   State<CreateTaskPage> createState() => _CreateTaskPageState();
@@ -28,19 +31,31 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   final _pickupAddress = TextEditingController();
   final _dropoffAddress = TextEditingController();
   final _cost = TextEditingController();
-  final _pickupLat = TextEditingController(text: '-15.4167');
-  final _pickupLng = TextEditingController(text: '28.2833');
-  final _dropoffLat = TextEditingController(text: '-15.4300');
-  final _dropoffLng = TextEditingController(text: '28.3500');
   late String _taskType;
+  GeoPoint? _pickup;
+  GeoPoint? _dropoff;
+  GeoPoint? _camera;
+  _Pin _placing = _Pin.pickup;
   var _step = 0;
   var _submitting = false;
+  var _locating = false;
   String? _error;
+
+  bool get _editing => widget.task != null;
 
   @override
   void initState() {
     super.initState();
-    _taskType = widget.initialType ?? 'store_pickup';
+    final task = widget.task;
+    _taskType = task?.taskType ?? widget.initialType ?? 'store_pickup';
+    if (task == null) return;
+    _title.text = task.title;
+    _description.text = task.description;
+    _pickupAddress.text = task.pickupAddress;
+    _dropoffAddress.text = task.dropoffAddress;
+    _cost.text = task.estimatedCost;
+    _pickup = task.pickupLocation;
+    _dropoff = task.dropoffLocation;
   }
 
   @override
@@ -50,10 +65,6 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     _pickupAddress.dispose();
     _dropoffAddress.dispose();
     _cost.dispose();
-    _pickupLat.dispose();
-    _pickupLng.dispose();
-    _dropoffLat.dispose();
-    _dropoffLng.dispose();
     super.dispose();
   }
 
@@ -74,7 +85,9 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _step == 2 ? l10n.stepThree : l10n.newErrand,
+              _editing
+                  ? l10n.editErrand
+                  : (_step == 2 ? l10n.stepThree : l10n.newErrand),
               style: const TextStyle(
                 color: AppTheme.teal,
                 fontWeight: FontWeight.w800,
@@ -98,7 +111,11 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
               ),
             FilledButton(
               onPressed: _submitting ? null : _advance,
-              child: Text(_step == 2 ? l10n.postErrand : l10n.continueAction),
+              child: Text(
+                _step == 2
+                    ? (_editing ? l10n.saveChanges : l10n.postErrand)
+                    : l10n.continueAction,
+              ),
             ),
           ],
         ),
@@ -141,29 +158,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
         ],
       );
     }
-    if (_step == 1) {
-      return ListView(
-        children: [
-          FieldCaption(l10n.pickupAddress),
-          TextField(controller: _pickupAddress),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton(
-              onPressed: _useMyLocation,
-              child: Text(l10n.useMyLocation),
-            ),
-          ),
-          FieldCaption(l10n.dropoffAddress),
-          TextField(controller: _dropoffAddress),
-          const SizedBox(height: 12),
-          FieldCaption(l10n.estimatedCost),
-          TextField(
-            controller: _cost,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          ),
-        ],
-      );
-    }
+    if (_step == 1) return _places(l10n);
     return ListView(
       children: [
         Glass(
@@ -209,6 +204,18 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                 style: TextStyle(color: context.colors.muted),
               ),
             ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: SizedBox(
+            height: 180,
+            child: ErrandMap(
+              stops: _stops(l10n),
+              routes: _route(),
+              gestures: false,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -272,6 +279,14 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
       return;
     }
     if (_step == 1) {
+      if (_pickup == null) {
+        setState(() => _error = l10n.placePickup);
+        return;
+      }
+      if (_dropoff == null) {
+        setState(() => _error = l10n.placeDropoff);
+        return;
+      }
       if (_pickupAddress.text.trim().length < 3) {
         setState(() => _error = l10n.pickupAddress);
         return;
@@ -294,32 +309,151 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     unawaited(_submit());
   }
 
+  Widget _places(AppLocalizations l10n) {
+    final placingPickup = _placing == _Pin.pickup;
+    return Column(
+      children: [
+        Expanded(
+          flex: 2,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: ErrandMap(
+              stops: _stops(l10n),
+              routes: _route(),
+              follow: _camera,
+              onTap: _point,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: ListView(
+            children: [
+              Text(
+                placingPickup ? l10n.placePickup : l10n.placeDropoff,
+                style: TextStyle(color: context.colors.muted),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [
+                  ChoiceChip(
+                    label: Text(l10n.pickupPin),
+                    selected: placingPickup,
+                    selectedColor: AppTheme.teal.withValues(alpha: 0.18),
+                    onSelected: (_) => setState(() => _placing = _Pin.pickup),
+                  ),
+                  ChoiceChip(
+                    label: Text(l10n.dropoffPin),
+                    selected: !placingPickup,
+                    selectedColor: AppTheme.copper.withValues(alpha: 0.18),
+                    onSelected: (_) => setState(() => _placing = _Pin.dropoff),
+                  ),
+                ],
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  onPressed: _locating ? null : _useMyLocation,
+                  child: Text(l10n.useMyLocation),
+                ),
+              ),
+              FieldCaption(l10n.pickupAddress),
+              TextField(controller: _pickupAddress),
+              const SizedBox(height: 12),
+              FieldCaption(l10n.dropoffAddress),
+              TextField(controller: _dropoffAddress),
+              const SizedBox(height: 12),
+              FieldCaption(l10n.estimatedCost),
+              TextField(
+                controller: _cost,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<ErrandStop> _stops(AppLocalizations l10n) {
+    final pickup = _pickup;
+    final dropoff = _dropoff;
+    return [
+      if (pickup != null)
+        ErrandStop(
+          id: 'pickup',
+          point: pickup,
+          kind: ErrandStopKind.pickup,
+          title: l10n.pickupAddress,
+        ),
+      if (dropoff != null)
+        ErrandStop(
+          id: 'dropoff',
+          point: dropoff,
+          kind: ErrandStopKind.dropoff,
+          title: l10n.dropoffAddress,
+        ),
+    ];
+  }
+
+  List<List<GeoPoint>> _route() {
+    final pickup = _pickup;
+    final dropoff = _dropoff;
+    if (pickup == null || dropoff == null) return const [];
+    return [
+      [pickup, dropoff],
+    ];
+  }
+
+  void _point(GeoPoint point) {
+    setState(() {
+      _place(point, moveCamera: false);
+      _error = null;
+    });
+  }
+
+  void _place(GeoPoint point, {required bool moveCamera}) {
+    if (_placing == _Pin.pickup) {
+      _pickup = point;
+      if (_dropoff == null) _placing = _Pin.dropoff;
+    } else {
+      _dropoff = point;
+    }
+    if (moveCamera) _camera = point;
+  }
+
   Future<void> _useMyLocation() async {
+    setState(() {
+      _locating = true;
+      _error = null;
+    });
     try {
       final point = await const GeolocatorLocationSource().current();
       if (!mounted) return;
       setState(() {
-        _pickupLat.text = point.lat.toString();
-        _pickupLng.text = point.lng.toString();
-        _error = null;
+        _place(point, moveCamera: true);
+        _locating = false;
       });
     } on LocationFailure catch (error) {
       if (!mounted) return;
-      setState(() => _error = error.message);
+      setState(() {
+        _locating = false;
+        _error = error.message;
+      });
     }
   }
 
   Future<void> _submit() async {
-    final pickup = GeoPoint(
-      lat: double.parse(_pickupLat.text.trim()),
-      lng: double.parse(_pickupLng.text.trim()),
-    );
-    final dropoff = GeoPoint(
-      lat: double.parse(_dropoffLat.text.trim()),
-      lng: double.parse(_dropoffLng.text.trim()),
-    );
-    if (!pickup.isValid || !dropoff.isValid) {
-      setState(() => _error = context.l10n.useMyLocation);
+    final pickup = _pickup;
+    final dropoff = _dropoff;
+    if (pickup == null ||
+        dropoff == null ||
+        !pickup.isValid ||
+        !dropoff.isValid) {
+      setState(() => _error = context.l10n.placePickup);
       return;
     }
 
@@ -328,18 +462,23 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
       _error = null;
     });
     try {
-      await context.read<TaskRepository>().create(
-        CreateTaskDraft(
-          title: _title.text,
-          description: _description.text,
-          taskType: _taskType,
-          pickupAddress: _pickupAddress.text,
-          dropoffAddress: _dropoffAddress.text,
-          estimatedCost: _cost.text,
-          pickup: pickup,
-          dropoff: dropoff,
-        ),
+      final draft = CreateTaskDraft(
+        title: _title.text,
+        description: _description.text,
+        taskType: _taskType,
+        pickupAddress: _pickupAddress.text,
+        dropoffAddress: _dropoffAddress.text,
+        estimatedCost: _cost.text,
+        pickup: pickup,
+        dropoff: dropoff,
       );
+      final existing = widget.task;
+      final repository = context.read<TaskRepository>();
+      if (existing == null) {
+        await repository.create(draft);
+      } else {
+        await repository.update(existing.id, draft);
+      }
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } on ApiException catch (error) {
@@ -351,6 +490,8 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     }
   }
 }
+
+enum _Pin { pickup, dropoff }
 
 class _Place extends StatelessWidget {
   const new({required this.label, required this.value, required this.color});

@@ -9,8 +9,10 @@ import 'package:runners_app/models/runner_task.dart';
 import 'package:runners_app/realtime/phoenix_channel.dart';
 import 'package:runners_app/runner/data/location_source.dart';
 import 'package:runners_app/runner/data/runner_repository.dart';
+import 'package:runners_app/tasks/view/errand_map.dart';
 import 'package:runners_app/theme/app_theme.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
+import 'package:runners_app/theme/map_sheet.dart';
 import 'package:runners_app/tracking/cubit/tracking_cubit.dart';
 
 class TrackingPage extends StatelessWidget {
@@ -59,12 +61,46 @@ class _TrackingView extends StatelessWidget {
         return Scaffold(
           body: Stack(
             children: [
-              ErrandBackdrop(
-                pins: [
-                  const ErrandPin(color: AppTheme.teal, dx: 0.46, dy: 0.5),
-                  if (runner != null)
-                    const ErrandPin(color: AppTheme.copper, dx: 0.58, dy: 0.3),
-                ],
+              MapSheet(
+                map: ErrandMap(
+                  stops: stopsFromTask(
+                    task,
+                    runner: runner,
+                    runnerTitle: l10n.runner,
+                  ),
+                  routes: [
+                    ...routesFromTasks([task]),
+                    if (runner != null) [runner, task.dropoffLocation],
+                  ],
+                  follow: runner,
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.paddingOf(context).top + 64,
+                    bottom: 16,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      task.title,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      state.message ??
+                          (runner == null
+                              ? l10n.trackingWaiting
+                              : '${runner.lat.toStringAsFixed(5)}, '
+                                    '${runner.lng.toStringAsFixed(5)}'),
+                      style: TextStyle(color: context.colors.muted),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      task.dropoffAddress,
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ],
+                ),
               ),
               SafeArea(
                 child: Padding(
@@ -82,36 +118,6 @@ class _TrackingView extends StatelessWidget {
                       MapChip(
                         runner == null ? l10n.trackingWaiting : l10n.track,
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: SheetCard(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        task.title,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        state.message ??
-                            (runner == null
-                                ? l10n.trackingWaiting
-                                : '${runner.lat.toStringAsFixed(5)}, '
-                                      '${runner.lng.toStringAsFixed(5)}'),
-                        style: TextStyle(color: context.colors.muted),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        task.dropoffAddress,
-                        style: const TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                      const SizedBox(height: 8),
                     ],
                   ),
                 ),

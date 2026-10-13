@@ -18,12 +18,14 @@ import 'package:runners_app/tasks/cubit/task_board_cubit.dart';
 import 'package:runners_app/tasks/data/task_repository.dart';
 import 'package:runners_app/tasks/view/create_task_page.dart';
 import 'package:runners_app/tasks/view/errand_card.dart';
+import 'package:runners_app/tasks/view/errand_map.dart';
 import 'package:runners_app/tasks/view/task_detail_page.dart';
 import 'package:runners_app/tasks/view/task_labels.dart';
 import 'package:runners_app/theme/app_theme.dart';
 import 'package:runners_app/theme/errand_logo.dart';
 import 'package:runners_app/theme/errand_widgets.dart';
 import 'package:runners_app/theme/glass.dart';
+import 'package:runners_app/theme/map_sheet.dart';
 
 class HomePage extends StatelessWidget {
   const new({super.key});
@@ -180,10 +182,20 @@ class _RequesterHomeState extends State<_RequesterHome> {
       );
     }
 
+    final active = widget.board.tasks
+        .where((task) => !task.isTerminal)
+        .toList();
     return Scaffold(
       body: Stack(
         children: [
-          const ErrandBackdrop(),
+          MapSheet(
+            map: ErrandMap(
+              stops: stopsFromTasks(active),
+              routes: routesFromTasks(active),
+              padding: const EdgeInsets.only(top: 88, bottom: 16),
+            ),
+            child: sheet,
+          ),
           Positioned(
             top: 56,
             left: 20,
@@ -199,15 +211,6 @@ class _RequesterHomeState extends State<_RequesterHome> {
               icon: Icons.person,
               onPressed: widget.onSettings,
               size: 48,
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.sizeOf(context).height * 0.72,
-              ),
-              child: SheetCard(child: SingleChildScrollView(child: sheet)),
             ),
           ),
         ],
@@ -240,18 +243,6 @@ class _RequesterHomeState extends State<_RequesterHome> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (_showMap)
-          Center(
-            child: Container(
-              width: 42,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: context.colors.line,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-          ),
         const ErrandLogo(style: ErrandLogoStyle.mark, height: 28),
         const SizedBox(height: 10),
         Text(l10n.whatNeed, style: Theme.of(context).textTheme.titleLarge),
@@ -530,8 +521,13 @@ class _RunnerHomeState extends State<_RunnerHome> {
     return Scaffold(
       body: Stack(
         children: [
-          const ErrandBackdrop(
-            pins: [ErrandPin(color: AppTheme.teal, dy: 0.32)],
+          MapSheet(
+            map: ErrandMap(
+              stops: stopsFromTasks(tasks),
+              routes: routesFromTasks(tasks),
+              padding: const EdgeInsets.only(top: 88, bottom: 16),
+            ),
+            child: sheet,
           ),
           Positioned(
             top: 56,
@@ -548,15 +544,6 @@ class _RunnerHomeState extends State<_RunnerHome> {
               icon: Icons.person,
               onPressed: widget.onSettings,
               size: 48,
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.sizeOf(context).height * 0.62,
-              ),
-              child: SheetCard(child: SingleChildScrollView(child: sheet)),
             ),
           ),
         ],

@@ -51,6 +51,8 @@ class TaskDetailCubit extends Cubit<TaskDetailState> {
 
   Future<void> cancel() => _run(_repository.cancel);
 
+  Future<void> reload() => _run(_repository.fetch);
+
   Future<void> delete() async {
     emit(state.copyWith(busy: true, clearMessage: true));
     try {

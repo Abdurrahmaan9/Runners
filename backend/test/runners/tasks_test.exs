@@ -64,6 +64,16 @@ defmodule Runners.TasksTest do
     assert Tasks.fetch_task(task.id) == {:error, :task_not_found}
   end
 
+  test "an accepted task cannot be edited" do
+    requester = register_user!()
+    runner = register_user!(%{role: "runner"})
+    task = create_task!(requester)
+    assert {:ok, accepted} = Tasks.accept_task(task.id, runner)
+
+    assert {:error, :invalid_transition} =
+             Tasks.update_task(accepted, requester, %{"title" => "Too late"})
+  end
+
   test "rejects out of bounds coordinates" do
     requester = register_user!()
 

@@ -6,9 +6,11 @@ import 'package:runners_app/models/app_user.dart';
 import 'package:runners_app/models/runner_task.dart';
 import 'package:runners_app/tasks/cubit/task_detail_cubit.dart';
 import 'package:runners_app/tasks/data/task_repository.dart';
+import 'package:runners_app/tasks/view/create_task_page.dart';
+import 'package:runners_app/tasks/view/errand_map.dart';
 import 'package:runners_app/tasks/view/task_labels.dart';
 import 'package:runners_app/theme/app_theme.dart';
-import 'package:runners_app/theme/errand_widgets.dart';
+import 'package:runners_app/theme/map_sheet.dart';
 import 'package:runners_app/tracking/view/tracking_page.dart';
 
 class TaskDetailPage extends StatelessWidget {
@@ -70,148 +72,155 @@ class _TaskDetailViewState extends State<_TaskDetailView> {
               ),
             ],
           ),
-          body: Column(
-            children: [
-              if (showMap)
-                SizedBox(height: 220, child: ErrandBackdrop(pins: _pins(task))),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          body: _body(
+            showMap: showMap,
+            map: ErrandMap(
+              stops: stopsFromTask(task),
+              routes: routesFromTasks([task]),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (finding) ...[
+                  Text(
+                    l10n.findingTitle,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    l10n.findingBody,
+                    style: TextStyle(color: context.colors.muted),
+                  ),
+                  const SizedBox(height: 14),
+                  const LinearProgressIndicator(color: AppTheme.teal),
+                  const SizedBox(height: 18),
+                ],
+                Row(
                   children: [
-                    if (finding) ...[
-                      Text(
-                        l10n.findingTitle,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        l10n.findingBody,
-                        style: TextStyle(color: context.colors.muted),
-                      ),
-                      const SizedBox(height: 14),
-                      const LinearProgressIndicator(color: AppTheme.teal),
-                      const SizedBox(height: 18),
-                    ],
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            taskTypeLabel(l10n, task.taskType),
-                            style: TextStyle(
-                              color: context.colors.muted,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          taskStatusLabel(l10n, task.status),
-                          style: const TextStyle(
-                            color: AppTheme.copper,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (task.description.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      Text(task.description),
-                    ],
-                    const SizedBox(height: 16),
-                    _Fact(label: l10n.pickupAddress, value: task.pickupAddress),
-                    _Fact(
-                      label: l10n.dropoffAddress,
-                      value: task.dropoffAddress,
-                    ),
-                    _Fact(
-                      label: l10n.estimatedCost,
-                      value: 'K ${task.estimatedCost}',
-                    ),
-                    if (task.requester != null)
-                      _Fact(
-                        label: l10n.postedBy,
-                        value: task.requester!.fullName,
-                      ),
-                    _Fact(
-                      label: l10n.runner,
-                      value: runner ?? l10n.noRunnerYet,
-                    ),
-                    if (isAssigned) ...[
-                      const SizedBox(height: 8),
-                      _Steps(status: task.status),
-                    ],
-                    if (state.message != null) ...[
-                      const SizedBox(height: 12),
-                      Text(
-                        state.message!,
-                        style: const TextStyle(color: Color(0xFFC2413B)),
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    if (user.isRunner && task.status == 'posted')
-                      FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppTheme.copper,
-                        ),
-                        onPressed: state.busy ? null : cubit.accept,
-                        child: Text(l10n.acceptErrand),
-                      ),
-                    if (isAssigned && advance != null)
-                      Row(
-                        children: [
-                          if (task.status == 'in_progress')
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () => _openTracking(context, task),
-                                child: Text(l10n.navigate),
-                              ),
-                            ),
-                          if (task.status == 'in_progress')
-                            const SizedBox(width: 10),
-                          Expanded(
-                            child: FilledButton(
-                              style: FilledButton.styleFrom(
-                                backgroundColor: AppTheme.copper,
-                              ),
-                              onPressed: state.busy
-                                  ? null
-                                  : () => cubit.advance(advance),
-                              child: Text(_advanceLabel(l10n, advance)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    if (task.status == 'in_progress' &&
-                        isRequester &&
-                        !isAssigned)
-                      OutlinedButton(
-                        onPressed: () => _openTracking(context, task),
-                        child: Text(l10n.track),
-                      ),
-                    if (!task.isTerminal && (isRequester || isAssigned))
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFFC2413B),
-                            side: const BorderSide(color: Color(0xFFF0C7C4)),
-                          ),
-                          onPressed: state.busy ? null : cubit.cancel,
-                          child: Text(l10n.cancelErrand),
+                    Expanded(
+                      child: Text(
+                        taskTypeLabel(l10n, task.taskType),
+                        style: TextStyle(
+                          color: context.colors.muted,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                    if (isRequester && task.status == 'posted')
-                      TextButton(
-                        onPressed: state.busy ? null : cubit.delete,
-                        child: Text(l10n.deleteErrand),
+                    ),
+                    Text(
+                      taskStatusLabel(l10n, task.status),
+                      style: const TextStyle(
+                        color: AppTheme.copper,
+                        fontWeight: FontWeight.w700,
                       ),
+                    ),
                   ],
                 ),
-              ),
-            ],
+                if (task.description.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Text(task.description),
+                ],
+                const SizedBox(height: 16),
+                _Fact(label: l10n.pickupAddress, value: task.pickupAddress),
+                _Fact(label: l10n.dropoffAddress, value: task.dropoffAddress),
+                _Fact(
+                  label: l10n.estimatedCost,
+                  value: 'K ${task.estimatedCost}',
+                ),
+                if (task.requester != null)
+                  _Fact(label: l10n.postedBy, value: task.requester!.fullName),
+                _Fact(label: l10n.runner, value: runner ?? l10n.noRunnerYet),
+                if (isAssigned) ...[
+                  const SizedBox(height: 8),
+                  _Steps(status: task.status),
+                ],
+                if (state.message != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    state.message!,
+                    style: const TextStyle(color: Color(0xFFC2413B)),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                if (user.isRunner && task.status == 'posted')
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.copper,
+                    ),
+                    onPressed: state.busy ? null : cubit.accept,
+                    child: Text(l10n.acceptErrand),
+                  ),
+                if (isAssigned && advance != null)
+                  Row(
+                    children: [
+                      if (task.status == 'in_progress')
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => _openTracking(context, task),
+                            child: Text(l10n.navigate),
+                          ),
+                        ),
+                      if (task.status == 'in_progress')
+                        const SizedBox(width: 10),
+                      Expanded(
+                        child: FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppTheme.copper,
+                          ),
+                          onPressed: state.busy
+                              ? null
+                              : () => cubit.advance(advance),
+                          child: Text(_advanceLabel(l10n, advance)),
+                        ),
+                      ),
+                    ],
+                  ),
+                if (task.status == 'in_progress' && isRequester && !isAssigned)
+                  OutlinedButton(
+                    onPressed: () => _openTracking(context, task),
+                    child: Text(l10n.track),
+                  ),
+                if (!task.isTerminal && (isRequester || isAssigned))
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFC2413B),
+                        side: const BorderSide(color: Color(0xFFF0C7C4)),
+                      ),
+                      onPressed: state.busy ? null : cubit.cancel,
+                      child: Text(l10n.cancelErrand),
+                    ),
+                  ),
+                if (isRequester && task.status == 'posted') ...[
+                  OutlinedButton(
+                    onPressed: state.busy ? null : () => _edit(context, task),
+                    child: Text(l10n.editErrand),
+                  ),
+                  TextButton(
+                    onPressed: state.busy ? null : cubit.delete,
+                    child: Text(l10n.deleteErrand),
+                  ),
+                ],
+              ],
+            ),
           ),
         );
       },
     );
+  }
+
+  Widget _body({
+    required bool showMap,
+    required Widget map,
+    required Widget child,
+  }) {
+    if (!showMap) {
+      return ListView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        children: [child],
+      );
+    }
+    return MapSheet(map: map, child: child);
   }
 
   String _advanceLabel(AppLocalizations l10n, String advance) {
@@ -220,6 +229,15 @@ class _TaskDetailViewState extends State<_TaskDetailView> {
       'in_progress' => l10n.startErrand,
       _ => l10n.completeErrand,
     };
+  }
+
+  Future<void> _edit(BuildContext context, RunnerTask task) async {
+    final saved = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(builder: (_) => CreateTaskPage(task: task)),
+    );
+    if ((saved ?? false) && context.mounted) {
+      await context.read<TaskDetailCubit>().reload();
+    }
   }
 
   void _openTracking(BuildContext context, RunnerTask task) {
@@ -236,27 +254,6 @@ bool _mapFor(AppUser user, RunnerTask task) {
           task.status == 'runner_arrived' ||
           task.status == 'in_progress');
 }
-
-List<ErrandPin> _pins(RunnerTask task) {
-  final pickup = task.pickupLocation;
-  return [
-    if (pickup != null)
-      ErrandPin(
-        color: AppTheme.teal,
-        dx: _mapX(pickup.lng),
-        dy: _mapY(pickup.lat),
-      ),
-    ErrandPin(
-      color: AppTheme.copper,
-      dx: _mapX(task.dropoffLocation.lng),
-      dy: _mapY(task.dropoffLocation.lat),
-    ),
-  ];
-}
-
-double _mapX(double lng) => ((lng - 28.15) / 0.30).clamp(0.08, 0.92);
-
-double _mapY(double lat) => ((-15.25 - lat) / 0.30).clamp(0.08, 0.92);
 
 class _Fact extends StatelessWidget {
   const new({required this.label, required this.value});
