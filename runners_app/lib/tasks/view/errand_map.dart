@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter_map/flutter_map.dart';
@@ -6,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/models/geo_point.dart';
 import 'package:runners_app/models/runner_task.dart';
 import 'package:runners_app/models/zambia.dart';
+import 'package:runners_app/tasks/data/road_route.dart';
 import 'package:runners_app/theme/app_theme.dart';
 
 enum ErrandStopKind { pickup, dropoff, runner }
@@ -93,10 +95,21 @@ class ErrandMap extends StatefulWidget {
 class _ErrandMapState extends State<ErrandMap> {
   final _map = MapController();
   var _ready = false;
+  var _ticket = 0;
   GeoPoint? _followed;
+  String _routeKey = '';
+  Map<String, List<GeoPoint>> _roads = const {};
+
+  @override
+  void initState() {
+    super.initState();
+    _routeKey = _routesKey(widget.routes);
+    unawaited(_loadRoutes());
+  }
 
   @override
   void dispose() {
+    _ticket++;
     _map.dispose();
     super.dispose();
   }
@@ -104,6 +117,11 @@ class _ErrandMapState extends State<ErrandMap> {
   @override
   void didUpdateWidget(ErrandMap oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final key = _routesKey(widget.routes);
+    if (key != _routeKey) {
+      _routeKey = key;
+      unawaited(_loadRoutes());
+    }
     final follow = widget.follow;
     if (follow != null && follow != _followed) {
       _followed = follow;
@@ -148,11 +166,13 @@ class _ErrandMapState extends State<ErrandMap> {
           PolylineLayer(
             polylines: [
               for (final route in widget.routes)
-                if (route.length >= 2)
+                if (route.length >= 2 && _leg(route).length >= 2)
                   Polyline(
-                    points: [for (final point in route) _latLng(point)],
+                    points: [for (final point in _leg(route)) _latLng(point)],
                     color: AppTheme.teal,
-                    strokeWidth: 4,
+                    strokeWidth: 5,
+                    borderStrokeWidth: 2,
+                    borderColor: AppTheme.white,
                   ),
             ],
           ),
@@ -186,9 +206,33 @@ class _ErrandMapState extends State<ErrandMap> {
     _fit();
   }
 
+  Future<void> _loadRoutes() async {
+    final ticket = ++_ticket;
+    final roads = <String, List<GeoPoint>>{};
+    for (final route in widget.routes) {
+      if (route.length < 2) continue;
+      final from = route.first;
+      final to = route.last;
+      final leg = await const RoadRoute().between(from, to);
+      if (!mounted || ticket != _ticket) return;
+      roads[_legKey(from, to)] = leg;
+    }
+    if (!mounted || ticket != _ticket) return;
+    setState(() => _roads = roads);
+    if (widget.follow == null) _fit();
+  }
+
+  List<GeoPoint> _leg(List<GeoPoint> route) {
+    return _roads[_legKey(route.first, route.last)] ?? const [];
+  }
+
   void _fit() {
     if (!_ready) return;
-    final points = [for (final stop in widget.stops) _latLng(stop.point)];
+    final points = [
+      for (final stop in widget.stops) _latLng(stop.point),
+      for (final road in _roads.values)
+        for (final point in road) _latLng(point),
+    ];
     if (points.isEmpty) {
       _map.move(_latLng(_lusaka), 12);
       return;
@@ -240,6 +284,21 @@ class _Pin extends StatelessWidget {
 }
 
 LatLng _latLng(GeoPoint point) => LatLng(point.lat, point.lng);
+
+String _routesKey(List<List<GeoPoint>> routes) {
+  return [
+    for (final route in routes)
+      if (route.length >= 2) _legKey(route.first, route.last),
+  ].join('|');
+}
+
+String _legKey(GeoPoint from, GeoPoint to) {
+  return '${_rough(from)}>${_rough(to)}';
+}
+
+String _rough(GeoPoint point) {
+  return '${point.lat.toStringAsFixed(4)},${point.lng.toStringAsFixed(4)}';
+}
 
 Color _color(ErrandStopKind kind) {
   return switch (kind) {
