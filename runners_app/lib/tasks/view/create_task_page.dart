@@ -7,8 +7,10 @@ import 'package:runners_app/l10n/l10n.dart';
 import 'package:runners_app/models/create_task_draft.dart';
 import 'package:runners_app/models/geo_point.dart';
 import 'package:runners_app/models/runner_task.dart';
+import 'package:runners_app/models/zambia.dart';
 import 'package:runners_app/runner/data/location_source.dart';
 import 'package:runners_app/tasks/data/task_repository.dart';
+import 'package:runners_app/tasks/data/zambia_places.dart';
 import 'package:runners_app/tasks/view/errand_map.dart';
 import 'package:runners_app/tasks/view/task_labels.dart';
 import 'package:runners_app/theme/app_theme.dart';
@@ -31,6 +33,10 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   final _pickupAddress = TextEditingController();
   final _dropoffAddress = TextEditingController();
   final _cost = TextEditingController();
+  final _search = TextEditingController();
+  Timer? _searchTimer;
+  List<PlaceHit> _results = const [];
+  var _searching = false;
   late String _taskType;
   GeoPoint? _pickup;
   GeoPoint? _dropoff;
@@ -65,6 +71,8 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     _pickupAddress.dispose();
     _dropoffAddress.dispose();
     _cost.dispose();
+    _search.dispose();
+    _searchTimer?.cancel();
     super.dispose();
   }
 
@@ -329,6 +337,33 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
         Expanded(
           child: ListView(
             children: [
+              TextField(
+                controller: _search,
+                onChanged: _queueSearch,
+                decoration: InputDecoration(hintText: l10n.searchZambia),
+              ),
+              if (_searching)
+                const Padding(
+                  padding: EdgeInsets.only(top: 8),
+                  child: LinearProgressIndicator(color: AppTheme.teal),
+                ),
+              if (!_searching &&
+                  _search.text.trim().length >= 3 &&
+                  _results.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    l10n.searchEmpty,
+                    style: TextStyle(color: context.colors.muted),
+                  ),
+                ),
+              for (final hit in _results)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(hit.name, maxLines: 2),
+                  onTap: () => _choose(hit),
+                ),
+              const SizedBox(height: 8),
               Text(
                 placingPickup ? l10n.placePickup : l10n.placeDropoff,
                 style: TextStyle(color: context.colors.muted),
@@ -408,7 +443,58 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     ];
   }
 
+  void _queueSearch(String value) {
+    _searchTimer?.cancel();
+    final query = value.trim();
+    if (query.length < 3) {
+      setState(() {
+        _results = const [];
+        _searching = false;
+      });
+      return;
+    }
+    _searchTimer = Timer(
+      const Duration(milliseconds: 400),
+      () => unawaited(_runSearch(query)),
+    );
+  }
+
+  Future<void> _runSearch(String query) async {
+    setState(() => _searching = true);
+    try {
+      final hits = await const ZambiaPlaces().search(query);
+      if (!mounted || _search.text.trim() != query) return;
+      setState(() {
+        _results = hits;
+        _searching = false;
+      });
+    } on Object {
+      if (!mounted || _search.text.trim() != query) return;
+      setState(() {
+        _results = const [];
+        _searching = false;
+        _error = context.l10n.searchFailed;
+      });
+    }
+  }
+
+  void _choose(PlaceHit hit) {
+    final field = _placing == _Pin.pickup ? _pickupAddress : _dropoffAddress;
+    setState(() {
+      _place(hit.point, moveCamera: true);
+      field.text = hit.name;
+      _results = const [];
+      _search.clear();
+      _searching = false;
+      _error = null;
+    });
+  }
+
   void _point(GeoPoint point) {
+    if (!inZambia(point)) {
+      setState(() => _error = context.l10n.outsideZambia);
+      return;
+    }
     setState(() {
       _place(point, moveCamera: false);
       _error = null;
@@ -433,6 +519,13 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     try {
       final point = await const GeolocatorLocationSource().current();
       if (!mounted) return;
+      if (!inZambia(point)) {
+        setState(() {
+          _locating = false;
+          _error = context.l10n.outsideZambia;
+        });
+        return;
+      }
       setState(() {
         _place(point, moveCamera: true);
         _locating = false;

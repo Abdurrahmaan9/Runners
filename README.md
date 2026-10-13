@@ -102,7 +102,7 @@ The client lives in `runners_app/` and was created with Very Good CLI. It target
 
 Sign in with a seeded phone number and `password123`. A requester posts an errand; a runner goes online, accepts it, and advances `assigned → runner arrived → in progress → completed`. Live tracking uses the Phoenix channel `task_tracking:<task_id>`.
 
-The map draws OpenStreetMap streets through CARTO. The phone needs a normal internet connection for the tiles. Pickup is teal, dropoff is copper, and a live runner is rose.
+The map draws streets from OpenStreetMap. The phone needs a normal internet connection for the tiles. Pickup is teal, dropoff is copper, and a live runner is rose.
 
 ```bash
 cd runners_app

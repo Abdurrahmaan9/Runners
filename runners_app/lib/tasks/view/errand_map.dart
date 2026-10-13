@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:runners_app/models/geo_point.dart';
 import 'package:runners_app/models/runner_task.dart';
+import 'package:runners_app/models/zambia.dart';
 import 'package:runners_app/theme/app_theme.dart';
 
 enum ErrandStopKind { pickup, dropoff, runner }
@@ -119,6 +120,13 @@ class _ErrandMapState extends State<ErrandMap> {
         mapController: _map,
         options: MapOptions(
           initialCenter: _latLng(target),
+          minZoom: 6,
+          cameraConstraint: CameraConstraint.containCenter(
+            bounds: LatLngBounds(
+              const LatLng(zambiaSouth, zambiaWest),
+              const LatLng(zambiaNorth, zambiaEast),
+            ),
+          ),
           backgroundColor: dark
               ? const Color(0xFF121A17)
               : const Color(0xFFE7EEEA),
@@ -134,9 +142,7 @@ class _ErrandMapState extends State<ErrandMap> {
         ),
         children: [
           TileLayer(
-            urlTemplate: dark
-                ? 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-                : 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             userAgentPackageName: 'com.runners.runners_app',
           ),
           PolylineLayer(
@@ -161,7 +167,9 @@ class _ErrandMapState extends State<ErrandMap> {
                 ),
             ],
           ),
-          const SimpleAttributionWidget(source: Text('OpenStreetMap, CARTO')),
+          const SimpleAttributionWidget(
+            source: Text('OpenStreetMap contributors'),
+          ),
         ],
       ),
     );
