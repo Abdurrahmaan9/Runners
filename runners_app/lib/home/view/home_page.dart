@@ -269,31 +269,32 @@ class _RequesterHomeState extends State<_RequesterHome> {
                   child: Glass(
                     borderRadius: BorderRadius.circular(16),
                     onTap: () => widget.onCreate(type),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              color: AppTheme.teal,
-                              borderRadius: BorderRadius.circular(10),
+                    padding: const EdgeInsets.fromLTRB(6, 6, 6, 10),
+                    child: Column(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: AspectRatio(
+                            aspectRatio: 1,
+                            child: Image.asset(
+                              taskTypeImage(type),
+                              fit: BoxFit.cover,
+                              excludeFromSemantics: true,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            taskTypeLabel(l10n, type),
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: context.colors.ink,
-                            ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          taskTypeLabel(l10n, type),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: context.colors.ink,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

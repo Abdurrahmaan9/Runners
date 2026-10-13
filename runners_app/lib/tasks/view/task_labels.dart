@@ -12,6 +12,14 @@ String taskStatusLabel(AppLocalizations l10n, String status) {
   };
 }
 
+String taskTypeImage(String type) {
+  return switch (type) {
+    'delivery' => 'assets/errand-types/delivery.jpg',
+    'home_chore' => 'assets/errand-types/home-chore.jpg',
+    _ => 'assets/errand-types/store-pickup.jpg',
+  };
+}
+
 String taskTypeLabel(AppLocalizations l10n, String type) {
   return switch (type) {
     'store_pickup' => l10n.storePickup,
